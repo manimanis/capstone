@@ -1,0 +1,88 @@
+{
+  "title": "Sample Exam",
+  "description": "This is a sample exam that you can edit",
+  "shuffle_exercises": false,
+  "exercises": [
+    {
+      "title": "Exercise 1",
+      "description": "This is a set of easy level questions.",
+      "shuffle_questions": "false",
+      "questions": [
+        {
+          "title": "Sky Color",
+          "description": "What is the color of the sky in the morning?",
+          "question_type": "radio",
+          "shuffle_answers": true,
+          "answers": [
+            {
+              "answer": "Yellow",
+              "is_correct": false,
+              "mark": 1
+            },
+            {
+              "answer": "Green",
+              "is_correct": false,
+              "mark": 1
+            },
+            {
+              "answer": "Blue",
+              "is_correct": true,
+              "mark": 1
+            },
+            {
+              "answer": "Red",
+              "is_correct": false,
+              "mark": 1
+            }
+          ]
+        },
+        {
+          "title": "Triangle Angles",
+          "description": "What is the sum of triangle angles?",
+          "question_type": "radio",
+          "shuffle_answers": true,
+          "answers": [
+            {
+              "answer": "180°",
+              "is_correct": true,
+              "mark": 1
+            },
+            {
+              "answer": "90°",
+              "is_correct": false,
+              "mark": 1
+            },
+            {
+              "answer": "360°",
+              "is_correct": false,
+              "mark": 1
+            }
+          ]
+        },
+        {
+          "title": "Square Angles",
+          "description": "What is the sum of sqaure angles?",
+          "question_type": "radio",
+          "shuffle_answers": true,
+          "answers": [
+            {
+              "answer": "180°",
+              "is_correct": false,
+              "mark": 1
+            },
+            {
+              "answer": "90°",
+              "is_correct": false,
+              "mark": 1
+            },
+            {
+              "answer": "360°",
+              "is_correct": true,
+              "mark": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

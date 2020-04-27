@@ -1,0 +1,563 @@
+<script src="/static/models/models.js"></script>
+<div id="teacher-app">
+    <div v-if="mode == 'editExam'">
+        <div v-if="loading_data">
+            <div class="text-center my-4">
+                <div class="lds-roller">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+        <form v-if="!loading_data" class="exam-data-form" class="needs-validation" action="">
+            <div>
+                <label for="exam-title">Title</label>
+                <input type="text" id="exam-title"
+                       :class="{'is-invalid': exam_data.title.trim().split(' ').length < 2}"
+                       class="form-control" v-model="exam_data.title">
+                <div class="invalid-feedback small font-italic">An exercise
+                    must have a description of 5 words min.
+                </div>
+            </div>
+            <div>
+                <label for="exam-description">Description</label>
+                <textarea type="text" id="exam-description"
+                          class="form-control"
+                          :class="{'is-invalid': exam_data.description.trim().split(' ').length < 5}"
+                          v-model="exam_data.description"
+                          required></textarea>
+                <div class="invalid-feedback small font-italic">An exercise
+                    must have a description of 5 words min.
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <label for="exam-from-date">From date</label>
+                    <input type="date" id="exam-from-date"
+                           :class="{'is-invalid': exam_data.from_date >= exam_data.to_date}"
+                           class="form-control" v-model="exam_data.from_date"
+                           required>
+                    <div class="invalid-feedback small font-italic">Must be
+                        lesser than [[exam_data.to_date]]
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label for="exam-to-date">To date</label>
+                    <input type="date" id="exam-to-date"
+                           class="form-control"
+                           :class="{'is-invalid': exam_data.to_date <= exam_data.from_date}"
+                           v-model="exam_data.to_date"
+                           :min="exam_data.from_date">
+                    <div class="invalid-feedback small font-italic">Must be
+                        greater than [[exam_data.from_date]]
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label for="exam-duration">Duration (in seconds)</label>
+                    <input type="number" id="exam-duration"
+                           class="form-control"
+                           :class="{'is-invalid': exam_data.exam_duration < 60 || exam_data.exam_duration > 84060}"
+                           v-model="exam_data.exam_duration" min="60"
+                           max="86400">
+                    <div class="invalid-feedback small font-italic">Must be
+                        between 60 and 86400
+                    </div>
+                    <small>[[convert_to_hhmmss(exam_data.exam_duration)]]</small>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label for="exam-max-retries">Number of retries</label>
+                    <input type="number" id="exam-max-retries"
+                           class="form-control"
+                           :class="{'is-invalid': exam_data.max_retries < 1 || exam_data.max_retries > 2147483647}"
+                           v-model="exam_data.max_retries" min="1"
+                           max="2147483647">
+                    <div class="invalid-feedback small font-italic">Must be
+                        between 1 and 2147483647
+                    </div>
+                </div>
+            </div>
+            <div>
+                <label>
+                    <input type="checkbox"
+                           v-model="exam_data.shuffle_exercises">
+                    Shuffle exercises
+                </label>
+            </div>
+            <div v-for="(exercise, indexExercise) in exam_data.exercises"
+                 class="border border-info m-2 p-2 rounded-lg">
+                <div class="clearfix">
+                    <div class="float-right">
+                        <a href="#"
+                           @click.prevent="setPosition(exam_data.exercises, indexExercise, indexExercise+1)"
+                           title="To down."
+                           class="btn btn-light btn-sm"
+                           v-if="indexExercise < exam_data.exercises.length-1">↓</a>
+                        <a href="#"
+                           @click.prevent="setPosition(exam_data.exercises, indexExercise, indexExercise-1)"
+                           title="To up."
+                           class="btn btn-light btn-sm"
+                           v-if="indexExercise > 0">↑</a>
+                        <a href="#"
+                           @click.prevent="deleteExercise(exam_data, indexExercise)"
+                           title="Delete this exercise."
+                           class="btn btn-danger btn-sm">&times;</a>
+                    </div>
+                </div>
+                <fieldset>
+                    <legend>[[exercise.title]]</legend>
+                    <div>
+                        <label :for="`exercise-${indexExercise}-title`">Title</label>
+                        <input type="text"
+                               :id="`exercise-${indexExercise}-title`"
+                               :class="{'is-invalid': exercise.title.trim().split(' ').length < 2}"
+                               class="form-control" v-model="exercise.title">
+                        <div class="invalid-feedback small font-italic">An
+                            exercise must have a description of 5 words min.
+                        </div>
+                    </div>
+                    <div>
+                        <label :for="`exercise-${indexExercise}-description`">Description</label>
+                        <textarea type="text"
+                                  :id="`exercise-${indexExercise}-description`"
+                                  class="form-control"
+                                  :class="{'is-invalid': exercise.description.trim().split(' ').length < 3}"
+                                  v-model="exercise.description"
+                                  required></textarea>
+                        <div class="invalid-feedback small font-italic">An
+                            exercise
+                            must have a description of 3 words min.
+                        </div>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="checkbox"
+                                   v-model="exercise.shuffle_questions">
+                            Shuffle questions
+                        </label>
+                    </div>
+                    <div v-for="(question, indexQuestion) in exercise.questions"
+                         class="border border-success p-2 m-2 rounded-lg">
+                        <div class="clearfix">
+                            <div class="float-right">
+                                <a href="#"
+                                   @click.prevent="setPosition(exercise.questions, indexQuestion, indexQuestion+1)"
+                                   title="To down."
+                                   class="btn btn-light btn-sm"
+                                   v-if="indexQuestion < exercise.questions.length-1">↓</a>
+                                <a href="#"
+                                   @click.prevent="setPosition(exercise.questions, indexQuestion, indexQuestion-1)"
+                                   title="To up."
+                                   class="btn btn-light btn-sm"
+                                   v-if="indexQuestion > 0">↑</a>
+                                <a href="#"
+                                   @click.prevent="createQuestion(exercise, question, indexQuestion+1)"
+                                   title="Duplicate this question."
+                                   class="btn btn-warning btn-sm">+</a>
+                                <a href="#"
+                                   @click.prevent="deleteQuestion(exercise, indexQuestion)"
+                                   title="Delete this question."
+                                   class="btn btn-danger btn-sm">&times;</a>
+                            </div>
+                        </div>
+                        <fieldset>
+                            <legend>[[question.title]]</legend>
+                            <div>
+                                <label :for="`exercise-${indexExercise}-question-${indexQuestion}-title`">Title</label>
+                                <input type="text"
+                                       :id="`exercise-${indexExercise}-question-${indexQuestion}-title`"
+                                       :class="{'is-invalid': question.title.trim().split(' ').length < 2}"
+                                       class="form-control"
+                                       v-model="question.title">
+                                <div class="invalid-feedback small font-italic">
+                                    A question must have a title of 2 words
+                                    min.
+                                </div>
+                            </div>
+                            <div>
+                                <label :for="`exercise-${indexExercise}-question-${indexQuestion}-description`">Description</label>
+                                <textarea type="text"
+                                          :id="`exercise-${indexExercise}-question-${indexQuestion}-description`"
+                                          class="form-control"
+                                          :class="{'is-invalid': question.description.trim().split(' ').length < 3}"
+                                          v-model="question.description"
+                                          required></textarea>
+                                <div class="invalid-feedback small font-italic">
+                                    A question must have a description of 3
+                                    words min.
+                                </div>
+                            </div>
+                            <div>
+                                <label>
+                                    <input type="checkbox"
+                                           v-model="question.shuffle_answers">
+                                    Shuffle answers
+                                </label>
+                            </div>
+                            <div>
+                                <label>
+                                    <input type="checkbox"
+                                           v-model="question._multiple_answers">
+                                    The question has multiple answers
+                                </label>
+                            </div>
+                            <template
+                                    v-if="question.question_type == 'QcmQuestion'">
+                                <div class="d-flex my-1"
+                                     v-for="(answer, indexAnswer) in question.answers">
+                                    <div class="text-center col-1">
+                                        <input :type="question.multiple_answers ? 'checkbox' : 'radio'"
+                                               :name="`exercise_${indexExercise}_question_${indexQuestion}`"
+                                               :value="'answer'+indexAnswer"
+                                               v-model="question.correct_answer">
+                                    </div>
+                                    <div class="flex-fill mx-1">
+                                        <input type="text"
+                                               v-model="answer.answer"
+                                               class="form-control"
+                                               :id="`exercise-${indexExercise}-question-${indexQuestion}-answer-${indexAnswer}`">
+                                    </div>
+                                    <div>
+                                        <a href="#"
+                                           @click.prevent="setPosition(question.answers, indexAnswer, indexAnswer+1)"
+                                           title="To down."
+                                           class="btn btn-light btn-sm"
+                                           :class="{'disabled': indexAnswer >= question.answers.length-1}">↓</a>
+                                        <a href="#"
+                                           @click.prevent="setPosition(question.answers, indexAnswer, indexAnswer-1)"
+                                           title="To up."
+                                           class="btn btn-light btn-sm"
+                                           :class="{'disabled': indexAnswer <= 0}">↑</a>
+                                        <a href="#"
+                                           @click.prevent="createAnswer(question, answer, indexAnswer+1)"
+                                           title="Duplicate this answer."
+                                           class="btn btn-warning btn-sm"
+                                           v-if="question.answers.length < 10">+</a>
+                                        <a href="#"
+                                           @click.prevent="deleteAnswer(question, indexAnswer)"
+                                           title="Delete this answer."
+                                           class="btn btn-danger btn-sm"
+                                           v-if="question.answers.length > 1">&times;</a>
+                                    </div>
+                                </div>
+                            </template>
+                        </fieldset>
+                    </div>
+                </fieldset>
+                <div>
+                    <button class="btn btn-primary"
+                            @click.prevent="createQuestion(exercise)">
+                        Create a question
+                    </button>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-info"
+                        @click.prevent="createExercise(exam_data)">Create an
+                    exercise
+                </button>
+            </div>
+            <div class="clearfix mt-4 mb-2">
+                <div class="float-left">
+                    <button class="btn btn-success"
+                            @click.prevent="saveExam(exam_data)"
+                            :disabled="loading_data">Save
+                    </button>
+                    <button class="btn btn-outline-secondary"
+                            @click.prevent="cancelEditExam(exam_data)"
+                            :disabled="loading_data">Cancel
+                    </button>
+                </div>
+                <div class="float-right">
+                    <button class="btn btn-warning"
+                            @click.prevent="reloadExam()"
+                            :disabled="loading_data">Reload
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div v-if="mode == 'listExams'" class="list-group exams-list">
+        <h2>Teacher Section</h2>
+        <p>From this section you can create and edit your exams.</p>
+        <div class="my-3">
+            <a href="#"
+               @click="createExam()"
+               class="btn btn-success"
+               v-if="enableCreateExam">Create an exam...</a>
+        </div>
+        <ul class="list-group">
+            <li v-if="loading_data" class="list-group-item">
+                <div class="text-center my-4">
+                    <div class="lds-roller">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+            </li>
+            <li v-for="(exam, indexExam) in exams" class="list-group-item">
+                <div class="clearfix">
+                    <h5 class="float-left exam-title">[[ exam.title ]]</h5>
+                    <div class="float-right">
+                        <small>
+                            <strong><em>#examId:</em></strong>
+                            [[ exam.id ]]
+                        </small>
+                        <a class="btn btn-outline-danger"
+                           title="Delete this exam." href="#"
+                           @click.prevent="deleteExam(exam, indexExam)">&times;</a>
+                    </div>
+                </div>
+                <p class="exam-description">
+                    [[ exam.description.substr(0, 250) ]]
+                </p>
+                <p class="exam-dates">
+                    <span data-title="#Enrolled">[[ exam.enrolled_count ]]</span>
+                    <span data-title="Valid from">[[ exam.from_date ]]</span>
+                    <span data-title="Expire on">[[ exam.to_date ]]</span>
+                    <span data-title="Creation">[[ exam.dt_creation ]]</span>
+                </p>
+                <p>
+                    <a href="#" class="btn btn-outline-dark"
+                       title="Edit this exam."
+                       @click.prevent="editExam(exam)">Edit...</a>
+
+                    <a href="#" class="btn btn-outline-dark"
+                       title="View the students names."
+                       @click.prevent="listEnrolledStudents(exam)"
+                       :class="{'disabled': exam.enrolled_count <= 0}">
+                        [[enrolledCountButtonCaption(exam.enrolled_count)]]</a>
+                </p>
+            </li>
+        </ul>
+    </div>
+    <div v-if="mode == 'listEnrolledStudents'">
+        <h2>List of Students</h2>
+        <p>List of the students who enrolled to the exam: <strong>[[exam_data.title]]</strong> -
+            <strong class="text-secondary"><em>#examId:</em></strong> [[exam_data.id]]
+        </p>
+        <ul class="list-group">
+            <li class="list-group-item" v-if="loading_data">
+                <div class="text-center my-4">
+                    <div class="lds-roller">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+            </li>
+            <li class="list-group-item"
+                v-for="(student_name, indexStudent) in students_names">
+                <small>#[[indexStudent+1]]</small> - [[student_name]]
+            </li>
+        </ul>
+        <div class="my-3">
+            <button class="btn btn-outline-secondary"
+                    @click.prevent="setMode('listExams')"
+                    :disabled="loading_data">Back
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    const teacherApp = new Vue({
+        el: '#teacher-app',
+        delimiters: ['[[', ']]'],
+        data: {
+            enableCreateExam: true,
+            enableListExams: true,
+            mode: null,
+            exam_data_save: null,
+            exam_data: null,
+            exams: [],
+            loading_data: false,
+            students_names: []
+        },
+        mounted: function () {
+            this.$nextTick(function () {
+                this.listExams();
+            })
+        },
+        methods: {
+            convert_to_hhmmss: function (duration) {
+                return convert_to_hhmmss(duration);
+            },
+            enrolledCountButtonCaption: function (count) {
+                if (count <= 0) return 'No enrollments yet!';
+                if (count == 1) return 'Student name';
+                return `${count} Students names`;
+            },
+            setMode: function (mode) {
+                this.mode = mode;
+                this.enableLinks(mode === null);
+            },
+            isEditMode: function () {
+                return this.mode === 'editExam';
+            },
+            isListMode: function () {
+                return this.mode === 'listExams';
+            },
+            enableLinks: function () {
+                this.enableCreateExam = this.isListMode();
+                this.enableListExams = false;
+            },
+            createExam: function () {
+                this.enableLinks(false);
+                this.loading_data = true;
+                this.exam_data = null;
+                this.setMode('editExam');
+                fetchFromServer('/exams', 'POST')
+                    .then(response => response.json())
+                    .then(exam_data => {
+                        const exam = new Exam(exam_data['exam']);
+                        this.exams.splice(0, 0, exam);
+                        this.loading_data = false;
+                        this.editExam(this.exams[0]);
+                    })
+                    .catch(error => {
+                        this.loading_data = false;
+                    });
+            },
+            listExams: function () {
+                this.enableLinks(false);
+                this.setMode('listExams');
+                this.loading_data = true;
+                this.exams = [];
+                fetchFromServer('/exams', 'GET')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.loading_data = false;
+                        this.exams = data['exams'].map(exam => new Exam(exam));
+                    })
+                    .catch(error => {
+                        this.loading_data = false;
+                    });
+            },
+            editExam: function (exam) {
+                this.exam_data = exam;
+                this.exam_data_save = new Exam(JSON.parse(JSON.stringify(exam)));
+                this.setMode('editExam');
+            },
+            cancelEditExam: function (exam) {
+                this.exam_data = new Exam(this.exam_data_save);
+                this.setMode('listExams');
+            },
+            reloadExam: function () {
+                if (this.isEditMode() && confirm('Reloading will drop all the changes made to this exam.\nAre you sure you want to reload this exam?')) {
+                    this.exam_data = new Exam(this.exam_data_save);
+                }
+            },
+            createExercise: function (exam) {
+                exam.exercises.push(exam.createExercise());
+            },
+            createQuestion: function (exercise, question = null, index = null) {
+                if (!question) {
+                    question = exercise.createQuestion();
+                } else {
+                    question = new QcmQuestion(question);
+                }
+                if (!index) {
+                    exercise.questions.push(question);
+                } else {
+                    exercise.questions.splice(index, 0, question);
+                }
+            },
+            createAnswer: function (question, answer, idx = null) {
+                if (question.answers.length == 10) {
+                    alert('You cannot add more than 10 answers to one question.');
+                    return;
+                }
+                if (!idx) {
+                    question.answers.push(new QcmAnswer(answer));
+                } else {
+                    question.answers.splice(idx, 0, new QcmAnswer(answer));
+                }
+            },
+            deleteExam: function (exam, indexExam) {
+                if (!confirm('Do you really want to delete this exam?')) {
+                    return;
+                }
+                fetchFromServer(`/exams/${exam.id}`, 'DELETE')
+                    .then(response => response.json())
+                    .then(exam_data => {
+                        this.exams.splice(indexExam, 1);
+                        this.loading_data = false;
+                        this.setMode('listExams');
+                    })
+                    .catch(error => {
+                        this.loading_data = false;
+                    });
+            },
+            deleteExercise: function (exam, indexExercise) {
+                if (!confirm('Do you want to delete this Exercise?')) {
+                    return;
+                }
+                exam.exercises.splice(indexExercise, 1);
+            },
+            deleteQuestion: function (exercise, indexQuestion) {
+                if (!confirm('Do you want to delete this question?')) {
+                    return;
+                }
+                exercise.questions.splice(indexQuestion, 1);
+            },
+            deleteAnswer: function (question, indexAnswer) {
+                if (!confirm('Do you want to delete this answer?')) {
+                    return;
+                }
+                question.answers.splice(indexAnswer, 1);
+            },
+            saveExam: function (exam) {
+                this.enableLinks(false);
+                this.loading_data = true;
+                fetchFromServer(`/exams/${exam.id}`, 'PATCH', JSON.stringify(exam))
+                    .then(response => response.json())
+                    .then(exam_data => {
+                        this.loading_data = false;
+                        this.setMode('listExams');
+                    })
+                    .catch(error => {
+                        this.loading_data = false;
+                    });
+            },
+            setPosition: function (arr, index1, index2) {
+                const val1 = arr[index1];
+                const val2 = arr[index2];
+                arr[index1] = val2;
+                arr[index2] = val1;
+                this.$forceUpdate();
+            },
+            listEnrolledStudents: function (exam) {
+                this.enableLinks(false);
+                this.loading_data = true;
+                this.exam_data = exam;
+                this.students_names = [];
+                this.setMode('listEnrolledStudents');
+                fetchFromServer(`/subscriptions/${exam.id}/students`, 'GET')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.students_names = data['students'];
+                        this.loading_data = false;
+                    })
+                    .catch(error => {
+                        this.loading_data = false;
+                    });
+            }
+        }
+    });
+</script>

@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+
+{% block page_content %}
+    <div class="my-2">
+    <img src="{{ auth_user.picture }}">
+        <ul>
+            <li><strong>name:</strong> {{ auth_user.fullname }}</li>
+            <li><strong>role:</strong> {{ auth_user.role }}</li>
+        </ul>
+    </div>
+{% endblock %}

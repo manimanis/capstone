@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+
+
+{% block page_content %}
+    {% if not auth_user.is_authenticated() %}
+        <h1>Welcome to <strong>Eval</strong> application.</h1>
+        <p><strong>Eval</strong> application is intended for teachers who want
+            to
+            evaluate their students.</p>
+    {% endif %}
+    {% if auth_user.role == 'teacher' %}
+        <div class="my-4">
+            {% include 'teacher.html' %}
+        </div>
+    {% elif auth_user.role == 'student' %}
+        <div class="my-4">
+            {% include 'student.html' %}
+        </div>
+    {% endif %}
+{% endblock %}

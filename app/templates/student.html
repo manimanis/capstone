@@ -1,0 +1,82 @@
+<div id="student-app">
+    <div class="m-4" v-if="mode == 'listExams'">
+        <h2>Student section</h2>
+        <p>Hello dear student from this section you can enroll or pass exams
+            you are
+            enrolled in.</p>
+        <ul class="list-group">
+            <li class="list-group-item" v-if="loading_data">
+                <div class="text-center my-4">
+                    <div class="lds-roller">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+            </li>
+            <li class="list-group-item d-flex"
+                v-for="(exam, indexExam) in exams">
+                <div class="flex-fill">[[exam.title]]</div>
+                <div>
+
+                </div>
+            </li>
+        </ul>
+        <div class="my-2">
+            <button class="btn btn-outline-success"
+                    @click.prevent="promptEnrollToExam()">Enroll to another exam...
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    const studentApp = new Vue({
+        el: '#student-app',
+        delimiters: ['[[', ']]'],
+        data: {
+            exams: [],
+            loading_data: false,
+            mode: null
+        },
+        mounted: function () {
+            this.$nextTick(function () {
+                this.listExams();
+            })
+        },
+        methods: {
+            listExams: function () {
+                this.loading_data = true;
+                this.exams = [];
+                this.mode = 'listExams';
+                fetchFromServer(`/students/{{ auth_user.user_id_db }}/exams`, 'GET')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        this.loading_data = false;
+                        this.exams = data['exams'];//.map(exam => new Exam(exam));
+
+                    })
+                    .catch(error => {
+                        this.loading_data = false;
+                    });
+            },
+            enrollToExam: function (examId) {
+                this.loading_data = true;
+                fetchFromServer(`/exams/${courseId}`)
+            },
+            promptEnrollToExam: function () {
+                const examId = prompt('Please enter the exam id:');
+                if (!examId) {
+                    alert('No examId provided.');
+                    return;
+                }
+
+            }
+        }
+    });
+</script>
