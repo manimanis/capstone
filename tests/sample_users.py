@@ -58,15 +58,7 @@ def generate_random_users(count=20, role=None):
     usernames = generate_usernames(random_names)
     roles = (generate_roles(count)
              if role is None else [role for i in range(count)])
-    users = []
-    for name, username, role in zip(random_names, usernames, roles):
-        if role == 'teacher':
-            user = dict(username=username, fullname=name,
-                        picture=generate_random_picture())
-        else:
-            user = dict(username=username, fullname=name,
-                        picture=generate_random_picture())
-        users.append(user)
+    users = [dict(username=username, fullname=name, role=role,
+                  picture=generate_random_picture())
+             for name, username, role in zip(random_names, usernames, roles)]
     return users
-
-

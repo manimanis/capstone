@@ -5,7 +5,7 @@ from datetime import datetime, date, timedelta
 SAMPLE_EXAMS = [
     {'author_id': 3,
      'description': 'This is a simple MCS Exam.',
-     'dt_creation': datetime.datetime(2020, 4, 26, 15, 58, 10, 106531),
+     'dt_creation': datetime(2020, 4, 26, 15, 58, 10, 106531),
      'exam_duration': 3600,
      'exam_hash': None,
      'exercises': json.dumps([{
@@ -202,15 +202,15 @@ SAMPLE_EXAMS = [
                  'title': 'Question 10'}],
          'shuffle_questions': False,
          'title': 'Exercise 1 of 1'}]),
-     'from_date': datetime.datetime(2020, 4, 26, 0, 0),
+     'from_date':datetime(2020, 4, 26, 0, 0),
      'id': 1,
      'max_retries': 2147483647,
      'shuffle_exercises': False,
      'title': 'HTML MCQ Exam',
-     'to_date': datetime.datetime(2020, 7, 25, 0, 0)},
+     'to_date': datetime(2020, 7, 25, 0, 0)},
     {'author_id': 3,
      'description': 'This is the second part of the MCQ Exam.',
-     'dt_creation': datetime.datetime(2020, 4, 26, 17, 43, 20, 522904),
+     'dt_creation': datetime(2020, 4, 26, 17, 43, 20, 522904),
      'exam_duration': 3600,
      'exam_hash': None,
      'exercises': json.dumps([
@@ -344,15 +344,15 @@ SAMPLE_EXAMS = [
                'title': 'Question 6'}],
           'shuffle_questions': False,
           'title': 'Exercise 1'}]),
-     'from_date': datetime.datetime(2020, 4, 26, 0, 0),
+     'from_date': datetime(2020, 4, 26, 0, 0),
      'id': 2,
      'max_retries': 2147483647,
      'shuffle_exercises': False,
      'title': 'HTML MCS - Part 2',
-     'to_date': datetime.datetime(2020, 7, 25, 0, 0)},
+     'to_date': datetime(2020, 7, 25, 0, 0)},
     {'author_id': 3,
      'description': 'This is the first part of the CSS MCQ',
-     'dt_creation': datetime.datetime(2020, 4, 26, 18, 1, 30, 305588),
+     'dt_creation': datetime(2020, 4, 26, 18, 1, 30, 305588),
      'exam_duration': 3600,
      'exam_hash': None,
      'exercises': json.dumps([
@@ -492,15 +492,15 @@ SAMPLE_EXAMS = [
                'title': 'Question 8'}],
           'shuffle_questions': False,
           'title': 'Exercise 1'}]),
-     'from_date': datetime.datetime(2020, 4, 26, 0, 0),
+     'from_date': datetime(2020, 4, 26, 0, 0),
      'id': 3,
      'max_retries': 2147483647,
      'shuffle_exercises': False,
      'title': 'CSS MCQ Exam Part 1',
-     'to_date': datetime.datetime(2020, 7, 25, 0, 0)},
+     'to_date': datetime(2020, 7, 25, 0, 0)},
     {'author_id': 3,
      'description': 'This is the second part of the CSS MCQ Exam.',
-     'dt_creation': datetime.datetime(2020, 4, 26, 18, 23, 37, 939234),
+     'dt_creation': datetime(2020, 4, 26, 18, 23, 37, 939234),
      'exam_duration': 3600,
      'exam_hash': None,
      'exercises': json.dumps([
@@ -665,12 +665,12 @@ SAMPLE_EXAMS = [
                   'title': 'Question 8'}],
           'shuffle_questions': True,
           'title': 'Exercise 1'}]),
-     'from_date': datetime.datetime(2020, 4, 26, 0, 0),
+     'from_date': datetime(2020, 4, 26, 0, 0),
      'id': 4,
      'max_retries': 2147483647,
      'shuffle_exercises': False,
      'title': 'CSS MCQ Part 2',
-     'to_date': datetime.datetime(2020, 7, 25, 0, 0)
+     'to_date': datetime(2020, 7, 25, 0, 0)
      }
 ]
 
@@ -689,4 +689,6 @@ def generate_random_exam(teacher_id):
         'max_retries': random.randint(1, 3),
         'exam_duration': random.randint(1, 8) * 900
     }
+    exam['title'] = f'Teacher Id: {teacher_id} - {exam["title"]}'
+    exam['description'] = f'Teacher Id: {teacher_id} - {exam["description"]}'
     return exam

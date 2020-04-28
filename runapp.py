@@ -1,11 +1,21 @@
 import os
+import sys
+
+import click
+
 from app import create_app, db, auth0
 from app.models import Teacher, Student, User, DatabaseMethods, Exam, \
-    StudentSubscription
+    StudentSubscription, StudentTry
 from flask_migrate import Migrate
 
+from tests.fixture import create_fixture_users, create_fixture
 
-app = create_app(os.getenv('FLASK_ENV', 'default'))
+RUN_CONFIG = os.getenv('FLASK_ENV', 'default')
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'tests':
+        RUN_CONFIG = 'testing'
+
+app = create_app(RUN_CONFIG)
 migrate = Migrate(app, db)
 
 
@@ -19,17 +29,27 @@ def make_shell_context():
         'User': User,
         'StudentSubscription': StudentSubscription,
         'DatabaseMethods': DatabaseMethods,
-        'Exam': Exam
+        'Exam': Exam,
+        'StudentTry': StudentTry
     }
 
 
 @app.cli.command()
-def tests():
+@click.option('--df/--ndf', 'db_fixture',
+              help='Generate test data fixtures.', default=False)
+@click.option('--tests/--no-tests', 'perform_tests', default=True,
+              help='Perform tests')
+def tests(db_fixture, perform_tests):
     """Run the unit tests."""
-    import unittest
-    os.environ['config'] = 'TESTING'
-    unittests = unittest.TestLoader().discover('tests')
-    unittest.TextTestRunner(verbosity=2).run(unittests)
+    if not db_fixture and not perform_tests:
+        print('Nothing to do!')
+    if db_fixture:
+        create_fixture()
+
+    if perform_tests:
+        import unittest
+        unittests = unittest.TestLoader().discover('tests')
+        unittest.TextTestRunner(verbosity=2).run(unittests)
 
 
 

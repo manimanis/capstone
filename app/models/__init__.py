@@ -4,4 +4,5 @@ from .teacher import Teacher
 from .exam import Exam
 from .student import Student
 from .user import User
+from .tries import StudentTry
 

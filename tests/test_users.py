@@ -7,11 +7,12 @@ from time import sleep
 from app import db, create_app
 from app.auth import verify_decode_jwt, generate_user_token
 from app.models import User
-from tests import generate_random_users, generate_token_by_role, load_tokens, \
+from tests.auth0_methods import load_tokens, generate_token_by_role, \
     verify_token_exp
-
+from tests.sample_users import generate_random_users
 
 print(generate_user_token())
+
 
 class UserTestCase(unittest.TestCase):
     app = None

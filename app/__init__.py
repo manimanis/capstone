@@ -14,7 +14,6 @@ auth0 = None
 ENDPOINTS_BASE_URL = os.environ.get('ENDPOINTS_BASE_URL')
 
 
-
 def create_app(config_name):
     global auth0, oauth, db
     app = Flask(__name__)

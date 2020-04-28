@@ -8,6 +8,8 @@ from .. import db
 from ..auth import requires_auth
 from ..models import Teacher
 
+# To be deleted
+
 
 @api.route('/teachers')
 @requires_auth('list:teachers')

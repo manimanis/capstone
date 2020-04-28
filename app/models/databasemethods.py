@@ -206,7 +206,8 @@ class DatabaseMethods:
                 for item in data_dict['delete']:
                     db.session.delete(item)
             db.session.commit()
-        except:
+        except Exception as e:
+            print(e)
             db.session.rollback()
             return False
         return True

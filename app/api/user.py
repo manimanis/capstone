@@ -7,6 +7,8 @@ from . import api, read_request_args
 from .. import db
 from ..models import User
 
+# To be deleted
+
 
 # @api.route('/users')
 # def username_availability():

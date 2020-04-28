@@ -27,7 +27,7 @@ def check_students_ids(students_ids):
 @api.route('/enrolls')
 @requires_auth('list:exams')
 def list_enrolled_exam(payload):
-    """Return the list of exams the student is enrolled to"""
+    """Return the list of exams the authenticated student is enrolled to"""
     username = payload['sub']
     student = check_student_rights(username)
     start, end, search = read_request_args()
@@ -108,7 +108,7 @@ def enroll_students_to_exam(payload, exam_id):
         return redirect(f'/enrolls?search={search}&start={start}&end={end}')
 
 
-@api.route('/enrolls/<int:exam_id>', methods=['PATCH'])
+@api.route('/enrolls/<int:exam_id>', methods=['DELETE'])
 @requires_auth('enroll:exams')
 def un_enroll_students_to_exam(payload, exam_id):
     """
