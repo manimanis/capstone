@@ -49,9 +49,11 @@
     </div>
     <div class="m-4" v-if="mode == 'detailsExam'">
         <div class="mb-5">
-            <button @click="listOfExams()" class="btn btn-outline-secondary">Back &larr;</button>
+            <button @click="listOfExams()" class="btn btn-outline-secondary">
+                Back &larr;
+            </button>
         </div>
-        <h3>[[exam_data.title]]</h3>
+        <h3>[[exam_data.title]] - #examId: [[exam_data.id]]</h3>
         <p v-for="paragraph in exam_data.description.split('\n')">
             [[paragraph]]</p>
         <h5>Exam duration</h5>
@@ -73,15 +75,112 @@
                 :alt="exam_data.teacher.fullname+' picture'"
                 style="width: 200px;"></p>
         <p>[[exam_data.teacher.fullname]]</p>
-        <div class="mt-5 p-2 border border-danger d-flex">
-            <h5 class="text-danger p-2">Danger</h5>
-            <div class="flex-fill p-2">You can un-enroll from this course definitely. This doesn't affect your historical data and your marks will be retained.</div>
-            <div class="p-2">
-                <button type="button" class="btn btn-outline-danger ml-2"
+        <div v-if="exam_data.canRetry()"
+             class="mt-5 mb-2 p-2 border border-success d-flex">
+            <h5 class="text-success p-2 col-2">Take exam</h5>
+            <div class="flex-fill p-2">If you're ready to take the exam click
+                the following button.
+            </div>
+            <div class="p-2 col-2">
+                <button type="button"
+                        class="btn btn-outline-success ml-2 w-100"
+                        @click="promptTakeExam(exam_data)"
+                        title="Click to take the exam.">
+                    Take it...
+                </button>
+            </div>
+        </div>
+        <div class="p-2 border border-danger d-flex">
+            <h5 class="text-danger p-2 col-2">Danger</h5>
+            <div class="flex-fill p-2">You can un-enroll from this course
+                definitely. This doesn't affect your historical data and your
+                marks will be retained.
+            </div>
+            <div class="p-2 col-2">
+                <button type="button" class="btn btn-outline-danger ml-2 w-100"
                         @click="promptUnEnrollToExam(exam_data)"
                         title="Remove this enroll">
                     <span>&times;</span>
                 </button>
+            </div>
+        </div>
+    </div>
+    <div class="m-4" v-if="mode == 'takeExam'">
+        <div v-if="loading_data">
+            <div class="text-center my-4">
+                <div class="lds-roller">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+        <div v-if="!loading_data && exam_try !== null">
+            <div class="row my-3 p-2 border">
+                <div class="col-4">
+                    <strong><em>Remaining time</em></strong>
+                    [[exam_try.display_time]]
+                </div>
+                <div class="flex-fill text-center">
+                    <strong><em>Question</em></strong>
+                    [[exam_try.questionIndex+1]] /
+                    [[exam_try.totalQuestionsCount]]
+                </div>
+                <div class="col-4 text-right">
+                    <strong><em>Exercise</em></strong>
+                    [[exam_try.currExerciseIndex+1]] /
+                    [[exam_try.exercisesCount]]
+                </div>
+            </div>
+            <div>
+                <h2>[[exam_try.title]]</h2>
+                <p v-for="paragraph in exam_try.description">
+                    [[paragraph]]</p>
+                <h3>[[exam_try.currExercise.title]]</h3>
+                <p v-for="paragraph in exam_try.currExercise.description">
+                    [[paragraph]]</p>
+                <h4>[[exam_try.currQuestion.title]]</h4>
+                <p v-for="paragraph in exam_try.currQuestion.description">
+                    [[paragraph]]</p>
+            </div>
+            <div>
+                <ul class="list-group">
+                    <li class="d-flex list-group-item"
+                        v-for="(answer, answerIndex) in exam_try.currQuestion.answers">
+                        <div v-if="exam_try.currQuestion.multiple_answers" class="mx-2">
+                            <input type="checkbox"
+                                   :id="'answer_'+answerIndex"
+                                   :value="'answer_'+answerIndex"
+                                   v-model="exam_try.answers[exam_try.questionIndex]">
+                        </div>
+                        <div class="flex-fill">
+                            <label :for="'answer_'+answerIndex">[[answer.answer]]</label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-flex my-3 p-2 border">
+                <div>
+                    <button @click="exam_try.prevQuestion()"
+                            class="btn btn-outline-primary w-100">Previous
+                        Question
+                    </button>
+                </div>
+                <div class="flex-fill text-center">
+                    <strong><em>Number of questions:</em></strong>
+                    [[exam_try.totalQuestionsCount]] in
+                    [[exam_try.exercisesCount]] exercise(s)
+                </div>
+                <div>
+                    <button @click="exam_try.nextQuestion()"
+                            class="btn btn-outline-primary w-100">Next Question
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -95,7 +194,8 @@
             loading_data: false,
             mode: null,
             error_message: null,
-            exam_data: null
+            exam_data: null,
+            exam_try: null
         },
         mounted: function () {
             this.$nextTick(function () {
@@ -196,6 +296,34 @@
             },
             dismissError: function () {
                 this.error_message = null;
+            },
+            promptTakeExam: function (exam) {
+                if (!confirm('Are you sure you want to start the exam?')) {
+                    return;
+                }
+                this.takeExam(exam.id);
+            },
+            takeExam: function (exam_id) {
+                this.mode = 'takeExam';
+                this.exam_try = null;
+                this.loading_data = true;
+                fetchFromServer(`/tries/${exam_id}`, 'POST')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.loading_data = false;
+                        if (!data['success']) {
+                            throw new Error(data['description']);
+                        }
+                        return data;
+                    })
+                    .then(data => {
+                        this.exam_try = new ExamTry(data['exam'], data['try']);
+                        this.exam_try.start();
+                    })
+                    .catch(error => {
+                        this.error_message = error;
+                        this.loading_data = false;
+                    });
             }
         }
     });

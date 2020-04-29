@@ -167,3 +167,124 @@ function QcmAnswer(answer) {
     this.is_correct = !!answer.is_correct;
     this.mark = this.mark || 1;
 }
+
+/*
+    "description": "This is the second part of the MCQ Exam.",
+    "dt_expiration": "Wed, 29 Apr 2020 10:53:45 GMT",
+    "dt_try": "Wed, 29 Apr 2020 09:53:45 GMT",
+    "exam_duration": 3600
+    "exam_id": 2,
+    "id": 4,
+    "student_id": 4,
+    "teacher_id": 3,
+    "title": "HTML MCS - Part 2",
+    "total_score": 0
+ */
+function ExamTry(exam, student_try) {
+    this.id = student_try.id;
+    this.exam_id = student_try.exam_id;
+    this.student_id = student_try.student_id;
+    this.teacher_id = student_try.teacher_id;
+    this.title = student_try.title;
+    this.description = student_try.description.split('\n');
+    student_try.dt_try = student_try.dt_try.substr(0, student_try.dt_try.indexOf('GMT'));
+    student_try.dt_expiration = student_try.dt_expiration.substr(0, student_try.dt_expiration.indexOf('GMT'));
+    this.start_time = Math.floor(new Date(student_try.dt_try).getTime() / 1000);
+    this.end_time = Math.floor(new Date(student_try.dt_expiration).getTime() / 1000);
+    this.display_time = '';
+    this.exam = exam;
+    for (let exercise of this.exam) {
+        exercise.description = exercise.description.split('\n');
+        for (let question of exercise.questions) {
+            question.description = question.description.split('\n');
+        }
+    }
+    this.totalQuestionsCount = this.getTotalQuestionsCount();
+    this.questionIndex = 0;
+    if (!Array.isArray(exam.answers) || exam.answers.length !== this.totalQuestionsCount) {
+        exam.answers = new Array(this.totalQuestionsCount).fill([]);
+    }
+    this.answers = exam.answers;
+    this.setQuestionByIndex(this.questionIndex);
+    this.exercisesCount = this.exam.length;
+}
+
+ExamTry.prototype.elapsedTime = function (time) {
+    return Math.floor(time.getTime() / 1000) - this.start_time;
+};
+
+ExamTry.prototype.remainingTime = function (time) {
+    return this.end_time - Math.floor(time.getTime() / 1000);
+};
+
+ExamTry.prototype.isTimedOut = function (time) {
+    return this.remainingTime(time) <= 0;
+};
+
+ExamTry.prototype.start = function () {
+    const time = new Date();
+    const remainingTime = this.remainingTime(time);
+    this.display_time = this.durationToString(remainingTime);
+    if (remainingTime > 0) {
+        setTimeout(() => {
+            this.start()
+        }, Math.min(remainingTime*1000, 5000));
+    }
+};
+
+ExamTry.prototype.durationToString = function (duration) {
+    if (duration <= 0) {
+      return 'Timed out';
+    } else if (duration < 60) {
+        return 'Less than one minute'
+    } else if (duration < 120) {
+        return 'Above one minute';
+    }
+    const m = Math.floor((duration % 3600) / 60);
+    const h = Math.floor(duration / 3600);
+    let res = '';
+    if (h > 0) {
+        res += (res !== '') ? ' ' : '';
+        res += `${h}hour${h != 1 ? 's' : ''}`;
+    }
+    if (m > 0) {
+        res += (res !== '') ? ' ' : '';
+        res += `${m}minute${m != 1 ? 's' : ''}`;
+    }
+    return res;
+};
+
+ExamTry.prototype.getTotalQuestionsCount = function () {
+    let tqc = 0;
+    for (let exercise of this.exam) {
+        tqc += exercise.questions.length;
+    }
+    return tqc;
+};
+
+ExamTry.prototype.setQuestionByIndex = function (index) {
+    let cum = 0;
+    for (let i = 0; i < this.exam.length; i++) {
+        if (cum <= index && index < cum + this.exam[i].questions.length) {
+            this.currQuestionIndex = index - cum;
+            this.currExerciseIndex = i;
+            this.currExercise = this.exam[i];
+            this.currQuestion = this.currExercise.questions[this.currQuestionIndex];
+        }
+    }
+};
+
+ExamTry.prototype.nextQuestion = function () {
+    if (this.questionIndex + 1 < this.totalQuestionsCount) {
+        this.questionIndex++;
+        this.setQuestionByIndex(this.questionIndex);
+    }
+};
+
+ExamTry.prototype.prevQuestion = function () {
+    if (this.questionIndex > 0) {
+        this.questionIndex--;
+        this.setQuestionByIndex(this.questionIndex);
+    }
+};
+
