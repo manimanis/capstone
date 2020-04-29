@@ -1,27 +1,11 @@
-from flask import jsonify, abort, request, redirect
+from flask import jsonify, abort, request, redirect, url_for
 
 from . import api, read_request_args, check_student_rights, \
-    check_teachers_rights
+    check_teachers_rights, check_exam_id, check_students_ids
 from .. import db
 from ..auth import requires_auth
-from ..models import Teacher, Exam, StudentSubscription, Student, User
-
-
-def check_exam_id(exam_id):
-    """Checks that the 'exam_id' is valid"""
-    exam = Exam.get_by_id(exam_id)
-    if exam is None:
-        abort(404, description='Exam not found.')
-    return exam
-
-
-def check_students_ids(students_ids):
-    """Checks that the 'students_ids' is a list of integers"""
-    if type(students_ids) != list \
-            or any(type(student_id) != int for student_id in students_ids):
-        abort(400, description='Provide a list of students ids.')
-    # remove duplicates
-    return list(set(students_ids))
+from ..models import Teacher, Exam, StudentSubscription, Student, User, \
+    StudentTry
 
 
 @api.route('/enrolls')
@@ -36,7 +20,20 @@ def list_enrolled_exam(payload):
     search_count = search_exams.count()
     exams_count = students_exams.count()
     start, end = max(start, 0), min(end, search_count)
-    exams = Exam.to_list_of_dict(search_exams.slice(start, end))
+    exams = Exam.to_list_of_dict(
+        search_exams.slice(start, end),
+        include_fields=Exam.get_table_columns() + ['teacher'],
+        exclude_fields=['exercises', 'is_archived', 'dt_archive',
+                        'shuffle_exercises'])
+    exams_ids = [exam['id'] for exam in exams]
+    count_tries = (StudentTry
+                   .num_tries_by_exams_ids(exams_ids, student.id).all())
+    students_tries = {exam_id: tries
+                      for exam_id, student_id, tries in count_tries}
+    for exam in exams:
+        exam['num_tries'] = (students_tries[exam['id']]
+                             if exam['id'] in students_tries
+                             else 0)
     return jsonify({
         'success': True,
         'exams_count': exams_count,
@@ -58,8 +55,14 @@ def list_enrolled_students(payload, exam_id):
     if exam.author_id != teacher.id:
         abort(403, description="Cannot view others teachers enrolled "
                                "students.")
+    students = (Student.get_query()
+                .join(StudentSubscription)
+                .filter(db.func.not_(Student.is_archived),
+                        db.func.not_(StudentSubscription.is_archived),
+                        StudentSubscription.exam_id == exam_id)
+                .all())
     students = sorted([student.fullname
-                       for student in exam.students
+                       for student in students
                        if not student.is_archived])
     return jsonify({
         'success': True,
@@ -99,13 +102,11 @@ def enroll_students_to_exam(payload, exam_id):
         students_ids = [user.id]
     else:
         abort(403, description='You are not allowed to enroll.')
-    if not StudentSubscription.enroll_students(exam_id, students_ids):
-        abort(400, description='Cannot persist new enrolls.')
-    if user.is_teacher():
-        return redirect(f'/enrolls/{exam_id}')
-    elif user.is_student():
-        start, end, search = read_request_args()
-        return redirect(f'/enrolls?search={search}&start={start}&end={end}')
+    enrolls = StudentSubscription.enroll_students(exam_id, students_ids)
+    return jsonify({
+        'success': True,
+        'new_enrolls': enrolls
+    })
 
 
 @api.route('/enrolls/<int:exam_id>', methods=['DELETE'])
@@ -143,10 +144,9 @@ def un_enroll_students_to_exam(payload, exam_id):
             .enrolled_count_in_students_ids(exam_id, students_ids)
             != len(students_ids)):
         abort(400, description='Not all of the students are enrolled.')
-    if not StudentSubscription.un_enroll_students(exam_id, students_ids):
-        abort(400, description='Cannot persist un-enrolls.')
-    if user.is_teacher():
-        return redirect(f'/enrolls/{exam_id}')
-    elif user.is_student():
-        start, end, search = read_request_args()
-        return redirect(f'/enrolls?search={search}&start={start}&end={end}')
+    deleted_enrolls = StudentSubscription.un_enroll_students(exam_id,
+                                                             students_ids)
+    return jsonify({
+        'success': True,
+        'deleted_enrolls': deleted_enrolls
+    })

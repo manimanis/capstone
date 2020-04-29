@@ -4,14 +4,14 @@ from urllib.parse import urlencode
 
 import requests
 from flask import Blueprint, request, render_template, session, redirect, \
-    url_for, flash
+    url_for, flash, abort
 from .. import auth0, ENDPOINTS_BASE_URL
 from ..auth import verify_decode_jwt, Auth0User, AUTH0_CLIENT_ID, \
-    populate_user_infos, generate_random_picture
+    populate_user_infos, generate_random_picture, generate_user_token, \
+    TEACHER_PERMISSIONS, STUDENT_PERMISSIONS, generate_user_infos
 from ..models import User, Student, Teacher
 
 main = Blueprint('main', __name__)
-
 
 PICTURE_HOST = 'https://randomuser.me/api/portraits/lego/'
 
@@ -37,6 +37,7 @@ def home():
 
 @main.route('/login')
 def login():
+    session.clear()
     return auth0.authorize_redirect(
         redirect_uri=os.environ.get('AUTH0_CALLBACK_URI'),
         audience=os.environ.get('AUTH0_APP_AUDIENCE')
@@ -132,7 +133,8 @@ def callback_handling():
         infos = resp.json()
         # Populate 'user_info' session var
         session['user_info'] = populate_user_infos(token, infos)
-    except:
+    except Exception as e:
+        print(e)
         return redirect('/logout')
 
     return redirect('/')
@@ -144,3 +146,22 @@ def show_profile():
     auth_user = Auth0User(user_info)
     return render_template('profile.html', auth_user=auth_user,
                            endpoints_url=ENDPOINTS_BASE_URL)
+
+
+@main.route('/offline/<int:user_id>')
+def offline_login(user_id):
+    """Login for offline tests"""
+    if request.remote_addr != '127.0.0.1':
+        abort(403, description='Access denied.')
+    user = User.get_by_id(user_id)
+    if user is None:
+        abort(403, description='Access denied.')
+    session.clear()
+    session['config'] = 'TESTING'
+    token = generate_user_token(user.username,
+                                TEACHER_PERMISSIONS
+                                if user.is_teacher()
+                                else STUDENT_PERMISSIONS)
+    infos = generate_user_infos(user.fullname)
+    session['user_info'] = populate_user_infos({'access_token': token}, infos)
+    return redirect('/')

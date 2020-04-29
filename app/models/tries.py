@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from app import db
 from app.models import DatabaseMethods
 
@@ -34,6 +36,7 @@ class StudentTry(db.Model, DatabaseMethods):
     # - current_state: 0 for started, 1 for completed, 2 for expired
     # - answers: The student answers
     # - student_score/total_score: A measure of achievement of the student
+    STARTED, COMPLETED, EXPIRED = range(3)
     dt_try = db.Column(db.DateTime, nullable=False,
                        default=db.func.current_timestamp())
     dt_expiration = db.Column(db.DateTime, nullable=False,
@@ -62,3 +65,49 @@ class StudentTry(db.Model, DatabaseMethods):
                    'student_fullname', 'student_picture', 'student_username',
                    'teacher_fullname', 'teacher_picture', 'teacher_username',
                    'title']
+
+    def fill_student_info(self, student):
+        """Fill by the student data"""
+        self.student_id = student.id
+        self.student_username = student.username
+        self.student_fullname = student.fullname
+        self.student_picture = student.picture
+
+    def fill_teacher_info(self, teacher):
+        """Fill by the teacher data"""
+        self.teacher_id = teacher.id
+        self.teacher_username = teacher.username
+        self.teacher_fullname = teacher.fullname
+        self.teacher_picture = teacher.picture
+
+    def fill_exam_info(self, exam):
+        """Fill by the exam data"""
+        self.exam_id = exam.id
+        self.title = exam.title
+        self.description = exam.description
+        self.exam_hash = exam.exam_hash
+        self.exercises = exam.exercises
+        self.exam_duration = exam.exam_duration
+
+    def create_new_try(self, student, teacher, exam):
+        """Create a new try given the passed arguments"""
+        self.fill_student_info(student)
+        self.fill_teacher_info(teacher)
+        self.fill_exam_info(exam)
+        self.dt_try = datetime.now()
+        self.dt_expiration = self.dt_try + \
+                             timedelta(seconds=exam.exam_duration)
+        self.current_state = self.STARTED
+        self.answers = '[]'
+        self.total_score = 0
+        self.student_score = 0
+
+    @staticmethod
+    def num_tries_by_exams_ids(exams_ids, student_id):
+        return (db.session
+                .query(StudentTry.exam_id,
+                       StudentTry.student_id,
+                       db.func.count(StudentTry.student_id))
+                .group_by(StudentTry.exam_id, StudentTry.student_id)
+                .filter(StudentTry.exam_id.in_(exams_ids),
+                        StudentTry.student_id == student_id))

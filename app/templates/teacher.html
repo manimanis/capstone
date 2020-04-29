@@ -548,7 +548,7 @@
                 this.exam_data = exam;
                 this.students_names = [];
                 this.setMode('listEnrolledStudents');
-                fetchFromServer(`/subscriptions/${exam.id}/students`, 'GET')
+                fetchFromServer(`/enrolls/${exam.id}`, 'GET')
                     .then(response => response.json())
                     .then(data => {
                         this.students_names = data['students'];

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, abort
-from ..models import Teacher, Student
+from ..models import Teacher, Student, Exam
 
 api = Blueprint('api', __name__)
 
@@ -34,6 +34,23 @@ def check_student_rights(username):
     return student_obj
 
 
+def check_exam_id(exam_id):
+    """Checks that the 'exam_id' is valid"""
+    exam = Exam.get_by_id(exam_id)
+    if exam is None:
+        abort(404, description='Exam not found.')
+    return exam
+
+
+def check_students_ids(students_ids):
+    """Checks that the 'students_ids' is a list of integers"""
+    if type(students_ids) != list \
+            or any(type(student_id) != int for student_id in students_ids):
+        abort(400, description='Provide a list of students ids.')
+    # remove duplicates
+    return list(set(students_ids))
+
+
 @api.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Headers',
@@ -43,4 +60,4 @@ def after_request(response):
     return response
 
 
-from . import errors, test, user, teacher, student, exam, enroll
+from . import errors, test, user, teacher, student, exam, enroll, tries

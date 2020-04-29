@@ -1,10 +1,30 @@
+<script src="/static/models/models.js"></script>
 <div id="student-app">
+    <div class="alert alert-danger alert-danger" v-if="error_message">
+        [[error_message]]
+        <button type="button" class="close" @click="dismissError()">
+            <span :aria-hidden="error_message">&times;</span>
+        </button>
+    </div>
     <div class="m-4" v-if="mode == 'listExams'">
         <h2>Student section</h2>
         <p>Hello dear student from this section you can enroll or pass exams
             you are
             enrolled in.</p>
         <ul class="list-group">
+            <li class="list-group-item d-flex"
+                v-for="(exam, indexExam) in exams">
+                <div class="mr-2">
+                    <span class="small font-weight-bolder font-italic">#examId:</span>
+                    [[exam.id]]
+                </div>
+                <div class="flex-fill">[[exam.title]]</div>
+                <div>
+                    <button class="btn btn-outline-dark"
+                            @click="detailsExam(exam)">Details
+                    </button>
+                </div>
+            </li>
             <li class="list-group-item" v-if="loading_data">
                 <div class="text-center my-4">
                     <div class="lds-roller">
@@ -19,18 +39,50 @@
                     </div>
                 </div>
             </li>
-            <li class="list-group-item d-flex"
-                v-for="(exam, indexExam) in exams">
-                <div class="flex-fill">[[exam.title]]</div>
-                <div>
-
-                </div>
-            </li>
         </ul>
-        <div class="my-2">
+        <div v-if="!loading_data" class="my-2">
             <button class="btn btn-outline-success"
-                    @click.prevent="promptEnrollToExam()">Enroll to another exam...
+                    @click.prevent="promptEnrollToExam()">Enroll to another
+                exam...
             </button>
+        </div>
+    </div>
+    <div class="m-4" v-if="mode == 'detailsExam'">
+        <div class="mb-5">
+            <button @click="listOfExams()" class="btn btn-outline-secondary">Back &larr;</button>
+        </div>
+        <h3>[[exam_data.title]]</h3>
+        <p v-for="paragraph in exam_data.description.split('\n')">
+            [[paragraph]]</p>
+        <h5>Exam duration</h5>
+        <p>[[convert_to_hhmmss(exam_data.exam_duration)]]</p>
+        <h5>Creation date</h5>
+        <p>[[exam_data.dt_creation]]</p>
+        <h5>Validity date</h5>
+        <p>From [[exam_data.from_date]] to [[exam_data.to_date]]
+            <span v-if="!exam_data.isAvailable()" class="badge badge-danger">expired</span>
+            <span v-if="exam_data.isAvailable()" class="badge badge-success">available</span>
+        </p>
+        <h5>Number of tries</h5>
+        <p>[[exam_data.numTriesMessage()]]
+            <span v-if="!exam_data.canRetry()" class="badge badge-danger">cannot retry again</span>
+            <span v-if="exam_data.canRetry()" class="badge badge-success">available retries</span>
+        </p>
+        <h5>Teacher</h5>
+        <p><img :src="exam_data.teacher.picture"
+                :alt="exam_data.teacher.fullname+' picture'"
+                style="width: 200px;"></p>
+        <p>[[exam_data.teacher.fullname]]</p>
+        <div class="mt-5 p-2 border border-danger d-flex">
+            <h5 class="text-danger p-2">Danger</h5>
+            <div class="flex-fill p-2">You can un-enroll from this course definitely. This doesn't affect your historical data and your marks will be retained.</div>
+            <div class="p-2">
+                <button type="button" class="btn btn-outline-danger ml-2"
+                        @click="promptUnEnrollToExam(exam_data)"
+                        title="Remove this enroll">
+                    <span>&times;</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -41,7 +93,9 @@
         data: {
             exams: [],
             loading_data: false,
-            mode: null
+            mode: null,
+            error_message: null,
+            exam_data: null
         },
         mounted: function () {
             this.$nextTick(function () {
@@ -49,33 +103,99 @@
             })
         },
         methods: {
+            convert_to_hhmmss: function (duration) {
+                return convert_to_hhmmss(duration);
+            },
             listExams: function () {
                 this.loading_data = true;
                 this.exams = [];
                 this.mode = 'listExams';
-                fetchFromServer(`/students/{{ auth_user.user_id_db }}/exams`, 'GET')
+                fetchFromServer(`/enrolls`, 'GET')
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data);
                         this.loading_data = false;
+                        if (!data['success']) {
+                            throw new Error(data['Description']);
+                        }
                         this.exams = data['exams'];//.map(exam => new Exam(exam));
-
                     })
                     .catch(error => {
+                        this.error_message = error;
                         this.loading_data = false;
                     });
             },
             enrollToExam: function (examId) {
                 this.loading_data = true;
-                fetchFromServer(`/exams/${courseId}`)
+                fetchFromServer(`/enrolls/${examId}`, 'POST', `[]`)
+                    .then(response => response.json())
+                    .then(data => {
+                        this.loading_data = false;
+                        if (!data['success']) {
+                            throw new Error(data['description']);
+                        }
+                        return data;
+                    })
+                    .then(data => {
+                        if (data['new_enrolls'] > 0) {
+                            this.listExams();
+                        } else if (data['new_enrolls'] === 0) {
+                            throw new Error('You are already enrolled to this exam.');
+                        }
+                    })
+                    .catch(error => {
+                        this.error_message = error;
+                        this.loading_data = false;
+                    });
             },
             promptEnrollToExam: function () {
-                const examId = prompt('Please enter the exam id:');
+                let examId = prompt('Please enter the exam id:');
                 if (!examId) {
                     alert('No examId provided.');
                     return;
                 }
-
+                examId = +examId;
+                if (!isNaN(examId)) {
+                    this.enrollToExam(examId);
+                }
+            },
+            unEnrollToExam: function (exam) {
+                this.loading_data = true;
+                fetchFromServer(`/enrolls/${exam.id}`, 'DELETE', `[]`)
+                    .then(response => response.json())
+                    .then(data => {
+                        this.loading_data = false;
+                        if (!data['success']) {
+                            throw new Error(data['description']);
+                        }
+                        return data;
+                    })
+                    .then(data => {
+                        if (data['deleted_enrolls'] > 0) {
+                            this.listExams();
+                        } else if (data['deleted_enrolls'] === 0) {
+                            throw new Error('You are not enrolled to this exam.');
+                        }
+                    })
+                    .catch(error => {
+                        this.error_message = error;
+                        this.loading_data = false;
+                    });
+            },
+            promptUnEnrollToExam: function (exam) {
+                if (!confirm('Are you sure you want to un enroll from this exam?')) {
+                    return;
+                }
+                this.unEnrollToExam(exam);
+            },
+            detailsExam: function (exam) {
+                this.exam_data = new Exam(exam);
+                this.mode = 'detailsExam';
+            },
+            listOfExams: function () {
+                this.mode = 'listExams';
+            },
+            dismissError: function () {
+                this.error_message = null;
             }
         }
     });

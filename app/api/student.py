@@ -15,7 +15,7 @@ from ..models import Student, Exam, StudentSubscription, Teacher
 @requires_auth('list:exams')
 def get_student_exams(payload, student_id):
     start, end, search = read_request_args()
-    student = check_student_rights(student_id, payload['sub'])
+    student = check_student_rights(payload['sub'])
     students_exams = (Exam.query
                       .join(StudentSubscription)
                       .filter(StudentSubscription.student_id == student.id))

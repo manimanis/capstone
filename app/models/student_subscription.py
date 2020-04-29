@@ -23,7 +23,7 @@ class StudentSubscription(db.Model, DatabaseMethods):
     # updateable fields
     updateable_fields = []
     # exclude fields
-    excluse_fields = ['is_archived', 'dt_archive']
+    exclude_fields = ['is_archived', 'dt_archive']
 
     @staticmethod
     def enrolled_count_by_exams_ids(exams_ids):
@@ -62,8 +62,8 @@ class StudentSubscription(db.Model, DatabaseMethods):
 
     @staticmethod
     def enroll_students(exam_id, students_ids):
-        """Enroll a list of 'students_ids' to an 'exam_id' and return True
-        if the operation succeeds"""
+        """Enroll a list of 'students_ids' to an 'exam_id' and return
+        a list of new enrolled students if the operation succeeds"""
         # fetch who is already enrolled to the course
         enrolls = (StudentSubscription
                    .enrolled_in_students_ids(exam_id, students_ids).all())
@@ -74,8 +74,9 @@ class StudentSubscription(db.Model, DatabaseMethods):
                        for student_id in students_ids
                        if student_id not in old_enrolls]
         if len(new_enrolls) > 0:
-            return StudentSubscription.persist_changes({'insert': new_enrolls})
-        return True
+            if StudentSubscription.persist_changes({'insert': new_enrolls}):
+                return len(new_enrolls)
+        return 0
 
     @staticmethod
     def un_enroll_students(exam_id, students_ids):
@@ -88,8 +89,9 @@ class StudentSubscription(db.Model, DatabaseMethods):
             for enroll in enrolls:
                 enroll.is_archived = True
                 enroll.dt_archive = datetime.now()
-            return StudentSubscription.persist_changes({'update': enrolls})
-        return True
+            if StudentSubscription.persist_changes({'update': enrolls}):
+                return len(enrolls)
+        return 0
 
     def __repr__(self):
         return self.to_str()

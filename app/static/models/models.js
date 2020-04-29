@@ -32,16 +32,51 @@ Exam.prototype.setExam = function (exam) {
     this.from_date = new Date(exam.from_date).toISOString().substring(0, 10);
     this.id = exam.id;
     this.max_retries = exam.max_retries;
-    this.suhffle_exercises = !!exam.suhffle_exercises;
+    this.shuffle_exercises = !!exam.shuffle_exercises;
     this.title = exam.title;
     this.to_date = new Date(exam.to_date).toISOString().substring(0, 10);
-    this.enrolled_count = exam.enrolled_count ? +exam.enrolled_count : 0;
+    if (exam.enrolled_count !== undefined) {
+        this.enrolled_count = exam.enrolled_count ? +exam.enrolled_count : 0;
+    }
+    if (exam.num_tries !== undefined) {
+        this.num_tries = exam.num_tries ? +exam.num_tries : 0;
+        const available_time = (new Date(this.to_date).getTime() - Math.max(new Date(this.from_date).getTime(), new Date().getTime())) / 1000;
+        const available_retries = Math.ceil(available_time / this.exam_duration);
+        this.max_retries = Math.min(this.max_retries, available_retries);
+    }
+    if (exam.teacher !== undefined) {
+        this.teacher = exam.teacher;
+    }
 };
 
 Exam.prototype.createExercise = function () {
     const exercise = new Exercise({});
     exercise.questions.push(exercise.createQuestion());
     return exercise;
+};
+
+Exam.prototype.isAvailable = function () {
+    return new Date().toISOString().substring(0, 10) <= this.to_date;
+};
+
+Exam.prototype.numTriesMessage = function () {
+    if (this.num_tries === this.max_retries) {
+        return 'You have consumed all of your retries.';
+    }
+    if (this.num_tries > 0 && this.num_tries + 1 === this.max_retries) {
+        return 'You have only one another chance.';
+    }
+    if (this.num_tries === 0 && this.max_retries === 1) {
+        return 'Be careful! You are not allowed to retry this exam';
+    }
+    if (this.max_retries - this.num_tries <= 3) {
+        return `You are lucky there are ${this.max_retries - this.num_tries} available chance.`;
+    }
+    return `You consumed ${this.num_tries} out of ${this.max_retries}`;
+};
+
+Exam.prototype.canRetry = function () {
+    return this.max_retries > this.num_tries;
 };
 
 function Exercise(exercise) {
@@ -108,7 +143,7 @@ Object.defineProperty(QcmQuestion.prototype, 'correct_answer', {
         }
     },
     set: function (answers) {
-       this.answers.forEach((answer, index) => answer.is_correct = answers.includes('answer'+index));
+        this.answers.forEach((answer, index) => answer.is_correct = answers.includes('answer' + index));
     }
 });
 Object.defineProperty(QcmQuestion.prototype, '_multiple_answers', {

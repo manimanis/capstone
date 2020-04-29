@@ -1,13 +1,14 @@
 import http.client
 import json
 import os
+import time
 from datetime import datetime, timedelta
 from functools import wraps
 import random
 from urllib.request import urlopen
 
 from authlib.integrations.flask_client import OAuth
-from flask import request, abort
+from flask import request, abort, session
 from jose import jwt
 
 AUTH0_DOMAIN = os.environ.get('AUTH0_DOMAIN')
@@ -196,17 +197,21 @@ def check_permissions(permission, payload):
     return True
 
 
+def read_payload_from_token(token):
+    if session.get('config', 'default') != 'TESTING':
+        payload = verify_decode_jwt(token)
+    else:
+        payload = decode_token(token)
+    return payload
+
+
 def requires_auth(permission=''):
     def requires_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             try:
                 token = get_token_auth_header()
-                print(token, os.environ.get('config', 'default'))
-                if os.environ.get('config', 'default') != 'TESTING':
-                    payload = verify_decode_jwt(token)
-                else:
-                    payload = decode_token(token)
+                payload = read_payload_from_token(token)
                 check_permissions(permission, payload)
                 return f(payload, *args, **kwargs)
             except AuthError as error:
@@ -219,8 +224,8 @@ def requires_auth(permission=''):
 
 def populate_user_infos(token, infos):
     """
-    :param token: The token dictionary received from Auth0
-    :param infos: The user infos dictionary collected from Auth0
+    :param token: The token dictionary
+    :param infos: The user infos dictionary
     :return:
     """
     from app.models import User  # Should be placed here
@@ -228,7 +233,7 @@ def populate_user_infos(token, infos):
     PICTURE_HOST = 'https://randomuser.me/api/portraits/lego/'
 
     # Load the information stored in access token
-    payload = verify_decode_jwt(token['access_token'])
+    payload = read_payload_from_token(token['access_token'])
     # Load the information stored in database
     user = User.get_by_username(payload['sub'])
     # After first login
@@ -422,13 +427,33 @@ def decode_token(token):
     return jwt.decode(token, public_key_str, algorithms=AUTH0_ALGORITHM[0])
 
 
+TEACHER_PERMISSIONS = [
+    "archive:exams",
+    "create:exams",
+    "edit:exams",
+    "enroll:exams",
+    "list:exams",
+    "list:students",
+    "try-resolve:exams",
+    "view-details:exams",
+    "view-details:students"
+]
+STUDENT_PERMISSIONS = [
+    "enroll:exams",
+    "list:exams",
+    "list:teachers",
+    "try-resolve:exams",
+    "view-details:teachers"
+]
+
+
 def generate_user_token(username, permissions):
     """Generate a token for a specific user"""
-    timestamp = datetime.timestamp()
+    timestamp = int(time.time())
     payload = {
         'sub': username,
         'iat': timestamp,
-        'exp': timestamp + 3600,
+        'exp': timestamp + 86400,
         'permissions': permissions
     }
     return generate_token(payload)

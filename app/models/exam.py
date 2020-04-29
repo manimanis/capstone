@@ -74,7 +74,8 @@ class Exam(db.Model, DatabaseMethods):
         return (Exam
                 .text_search(search)
                 .join(StudentSubscription)
-                .filter(StudentSubscription.student_id == student_id))
+                .filter(StudentSubscription.student_id == student_id,
+                        db.func.not_(StudentSubscription.is_archived)))
 
     @classmethod
     def to_dict(cls, obj, exclude_fields=None, include_fields=None):
@@ -92,17 +93,50 @@ class Exam(db.Model, DatabaseMethods):
     @classmethod
     def to_list_of_dict(cls, data_list, include_fields=None,
                         exclude_fields=None):
-        if include_fields and 'enrolled_count' in include_fields:
-            exams_ids = [exam.id for exam in data_list]
+        enrolled_count = {}
+        exams_ids = [exam.id for exam in data_list]
+        if include_fields is not None and 'enrolled_count' in include_fields:
             enrolled_count = {
                 key: value for key, value in StudentSubscription
                     .enrolled_count_by_exams_ids(exams_ids).all()}
-            for exam in data_list:
-                exam.enrolled_count = (enrolled_count[exam.id]
-                                       if exam.id in enrolled_count else 0)
         exams = super().to_list_of_dict(data_list,
                                         exclude_fields, include_fields)
+        if include_fields is not None and 'teacher' in include_fields:
+            fields = ['id', 'fullname', 'picture']
+            for exam in exams:
+                exam['teacher'] = {field: exam['teacher'][field]
+                                   for field in fields
+                                   if field in exam['teacher']}
+        if enrolled_count:
+            for exam in exams:
+                exam['enrolled_count'] = (enrolled_count[exam['id']]
+                                          if exam['id'] in enrolled_count
+                                          else 0)
         return exams
+
+    def stripped_exercises(self):
+        """Return a dictionary of the exercises answers being stripped."""
+        if type(self.exercises) == str:
+            exercise_dict = json.loads(self.exercises)
+        else:
+            exercise_dict = self.exercises.copy()
+        for exercise in exercise_dict:
+            for question in exercise['questions']:
+                for answer in question['answers']:
+                    if 'is_correct' in answer:
+                        del answer['is_correct']
+        return exercise_dict
+
+    def to_dict_strip_answers(self):
+        exam_dict = self.to_dict(self)
+        if 'exercises' not in exam_dict:
+            return exam_dict
+        for exercise in exam_dict['exercises']:
+            for question in exercise['questions']:
+                for answer in question['answers']:
+                    if 'is_correct' in answer:
+                        del answer['is_correct']
+        return exam_dict
 
     def __repr__(self):
         return self.to_str()

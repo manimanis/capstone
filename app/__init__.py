@@ -1,12 +1,15 @@
 import os
 
-from flask import Flask
+
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.exceptions import HTTPException
+
 from config import config
 
-from .auth import init_auth
+from .auth import init_auth, AuthError
 
 db = SQLAlchemy()
 oauth = None
@@ -28,6 +31,24 @@ def create_app(config_name):
 
     from .frontend import main as main_blueprint
     app.register_blueprint(main_blueprint)
+
+    @app.errorhandler(HTTPException)
+    def handle_exception(e):
+        return jsonify({
+            'success': False,
+            'code': e.code,
+            'name': e.name,
+            'description': e.description
+        }), e.code
+
+    @app.errorhandler(AuthError)
+    def handle_exception(e):
+        return jsonify({
+            'success': False,
+            'code': e.status_code,
+            'name': e.error,
+            'description': e.error
+        }), e.code
 
     return app
 
