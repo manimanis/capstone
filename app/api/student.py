@@ -8,8 +8,6 @@ from .. import db
 from ..auth import requires_auth
 from ..models import Student, Exam, StudentSubscription, Teacher
 
-# To be deleted
-
 
 @api.route('/students/<int:student_id>/exams')
 @requires_auth('list:exams')
@@ -81,7 +79,8 @@ def get_student_by_id(payload, student_id):
 
 
 @api.route('/students', methods=['POST'])
-def insert_student():
+@requires_auth('students:create')
+def insert_student(payload):
     data = request.get_json()
     if not Student.can_insert(data):
         abort(400, description='Missing student data.')
@@ -104,7 +103,8 @@ def insert_student():
 
 
 @api.route('/students/<int:student_id>', methods=['PATCH'])
-def update_student(student_id):
+@requires_auth('teachers:edit')
+def update_student(payload, student_id):
     student = Student.get_by_id(student_id)
     if student is None:
         abort(404, description='Student not found.')
@@ -128,6 +128,7 @@ def update_student(student_id):
 
 
 @api.route('/students/<int:student_id>', methods=['DELETE'])
+@requires_auth('students:delete')
 def delete_student(student_id):
     """
     Mark a student as archived. We don't delete information to preserve data

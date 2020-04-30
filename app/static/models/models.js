@@ -201,10 +201,10 @@ function ExamTry(exam, student_try) {
     }
     this.totalQuestionsCount = this.getTotalQuestionsCount();
     this.questionIndex = 0;
-    if (!Array.isArray(exam.answers) || exam.answers.length !== this.totalQuestionsCount) {
-        exam.answers = new Array(this.totalQuestionsCount).fill([]);
+    if (!Array.isArray(student_try.answers) || student_try.answers.length !== this.totalQuestionsCount) {
+        student_try.answers = new Array(this.totalQuestionsCount).fill([]);
     }
-    this.answers = exam.answers;
+    this.answers = student_try.answers;
     this.setQuestionByIndex(this.questionIndex);
     this.exercisesCount = this.exam.length;
 }

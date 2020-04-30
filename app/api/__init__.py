@@ -60,4 +60,4 @@ def after_request(response):
     return response
 
 
-from . import errors, test, user, teacher, student, exam, enroll, tries
+from . import test, user, teacher, student, exam, enroll, tries

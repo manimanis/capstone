@@ -8,8 +8,6 @@ from .. import db
 from ..auth import requires_auth
 from ..models import Teacher
 
-# To be deleted
-
 
 @api.route('/teachers')
 @requires_auth('list:teachers')
@@ -45,7 +43,8 @@ def get_teacher_by_id(payload, teacher_id):
 
 
 @api.route('/teachers', methods=['POST'])
-def insert_teacher():
+@requires_auth('teachers:create')
+def insert_teacher(payload):
     data = request.get_json()
     if not Teacher.can_insert(data):
         abort(400, description='Missing teacher data.')
@@ -68,7 +67,8 @@ def insert_teacher():
 
 
 @api.route('/teachers/<int:teacher_id>', methods=['PATCH'])
-def update_teacher(teacher_id):
+@requires_auth('teachers:edit')
+def update_teacher(payload, teacher_id):
     teacher = Teacher.get_by_id(teacher_id)
     if teacher is None:
         abort(404, description='Teacher not found.')
@@ -92,7 +92,8 @@ def update_teacher(teacher_id):
 
 
 @api.route('/teachers/<int:teacher_id>', methods=['DELETE'])
-def delete_teacher(teacher_id):
+@requires_auth('teachers:delete')
+def delete_teacher(payload, teacher_id):
     """
     Mark a teacher as archived. We don't delete information to preserve data
     integrity.

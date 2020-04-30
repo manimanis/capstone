@@ -63,7 +63,7 @@
         <h5>Validity date</h5>
         <p>From [[exam_data.from_date]] to [[exam_data.to_date]]
             <span v-if="!exam_data.isAvailable()" class="badge badge-danger">expired</span>
-            <span v-if="exam_data.isAvailable()" class="badge badge-success">available</span>
+            <span v-if="exam_data.isAvailable()" class="badge badge-success">not expired</span>
         </p>
         <h5>Number of tries</h5>
         <p>[[exam_data.numTriesMessage()]]
@@ -152,7 +152,8 @@
                 <ul class="list-group">
                     <li class="d-flex list-group-item"
                         v-for="(answer, answerIndex) in exam_try.currQuestion.answers">
-                        <div v-if="exam_try.currQuestion.multiple_answers" class="mx-2">
+                        <div v-if="exam_try.currQuestion.multiple_answers"
+                             class="mx-2">
                             <input type="checkbox"
                                    :id="'answer_'+answerIndex"
                                    :value="'answer_'+answerIndex"
@@ -166,7 +167,8 @@
             </div>
             <div class="d-flex my-3 p-2 border">
                 <div>
-                    <button @click="exam_try.prevQuestion()"
+                    <button v-if="exam_try.questionIndex > 0"
+                            @click="prevQuestion()"
                             class="btn btn-outline-primary w-100">Previous
                         Question
                     </button>
@@ -177,8 +179,13 @@
                     [[exam_try.exercisesCount]] exercise(s)
                 </div>
                 <div>
-                    <button @click="exam_try.nextQuestion()"
+                    <button v-if="exam_try.questionIndex+1 < exam_try.totalQuestionsCount"
+                            @click="nextQuestion()"
                             class="btn btn-outline-primary w-100">Next Question
+                    </button>
+                    <button v-if="exam_try.questionIndex+1 == exam_try.totalQuestionsCount"
+                            class="btn btn-outline-danger w-100"
+                            @click="promptTerminateExam()">Terminate
                     </button>
                 </div>
             </div>
@@ -322,8 +329,52 @@
                     })
                     .catch(error => {
                         this.error_message = error;
+                        this.listExams();
                         this.loading_data = false;
                     });
+            },
+            saveAnswers: function (exam_try, current_state) {
+                this.loading_data = true;
+                if (!current_state) {
+                    current_state = 3; // SAVE
+                }
+                fetchFromServer(`/tries/${exam_try.id}`, 'PATCH',
+                    JSON.stringify({
+                        exam_id: exam_try.exam_id,
+                        teacher_id: exam_try.teacher_id,
+                        current_state: current_state,
+                        answers: exam_try.answers
+                    }))
+                    .then(response => response.json())
+                    .then(data => {
+                        this.loading_data = false;
+                        if (!data['success']) {
+                            throw new Error(data['description']);
+                        }
+                        return data;
+                    })
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        this.error_message = error;
+                        this.loading_data = false;
+                    });
+            },
+            nextQuestion: function () {
+                this.saveAnswers(this.exam_try);
+                this.exam_try.nextQuestion();
+            },
+            prevQuestion: function () {
+                this.saveAnswers(this.exam_try);
+                this.exam_try.prevQuestion();
+            },
+            promptTerminateExam: function () {
+                if (!confirm('Are you sure you want to terminate the exam!\nYou will not be able to resume it nor modify your answers anymore.')) {
+                    return;
+                }
+                this.saveAnswers(this.exam_try, 1); // completed
+                this.listExams();
             }
         }
     });

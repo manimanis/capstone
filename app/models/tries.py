@@ -33,10 +33,10 @@ class StudentTry(db.Model, DatabaseMethods):
     # student try
     # - dt_try: The student begin the exam at this datetime
     # - dt_expiration: The exam will expire at this point of datetime
-    # - current_state: 0 for started, 1 for completed, 2 for expired
+    # - current_state: 0 for started, 1 for completed, 2 for expired, 3 save
     # - answers: The student answers
     # - student_score/total_score: A measure of achievement of the student
-    STARTED, COMPLETED, EXPIRED = range(3)
+    STARTED, COMPLETED, EXPIRED, SAVE = range(4)
     dt_try = db.Column(db.DateTime, nullable=False,
                        default=db.func.current_timestamp())
     dt_expiration = db.Column(db.DateTime, nullable=False,

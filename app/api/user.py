@@ -5,9 +5,8 @@ from sqlalchemy import or_
 
 from . import api, read_request_args
 from .. import db
+from ..auth import requires_auth
 from ..models import User
-
-# To be deleted
 
 
 # @api.route('/users')
@@ -40,7 +39,8 @@ from ..models import User
 #     })
 
 @api.route('/users')
-def get_users():
+@requires_auth('users:get')
+def get_users(payload):
     """Returns a list of users"""
     start, end, search = read_request_args()
     query = User.text_search(search)
@@ -59,7 +59,8 @@ def get_users():
 
 
 @api.route('/users/<int:user_id>')
-def get_user_by_id(user_id):
+@requires_auth('users:get')
+def get_user_by_id(payload, user_id):
     """Returns a single user by its id"""
     user = User.get_by_id(user_id)
     if user is None:
@@ -71,7 +72,8 @@ def get_user_by_id(user_id):
 
 
 @api.route('/users', methods=['POST'])
-def insert_user():
+@requires_auth('users:post')
+def insert_user(payload):
     data = request.get_json()
     if not User.can_insert(data):
         abort(400, description='Missing user data.')
@@ -94,7 +96,8 @@ def insert_user():
 
 
 @api.route('/users/<int:user_id>', methods=['PATCH'])
-def update_user(user_id):
+@requires_auth('users:patch')
+def update_user(payload, user_id):
     user = User.get_by_id(user_id)
     if user is None:
         abort(404, description='User not found.')
@@ -118,7 +121,8 @@ def update_user(user_id):
 
 
 @api.route('/users/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
+@requires_auth('users:post')
+def delete_user(payload, user_id):
     """
     Mark a user as archived. We don't delete information to preserve data
     integrity.
