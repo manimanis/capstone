@@ -8,8 +8,7 @@ from tests.sample_users import generate_random_users
 
 def create_fixture_users(count=10):
     print(f'Inserting {count} users...')
-    users_dict = generate_random_users(count // 2, 'teacher') + \
-                 generate_random_users(count - count // 2, 'student')
+    users_dict = generate_random_users(count, ['teacher', 'student'])
     users = []
     for user_dict in users_dict:
         if user_dict['role'] == 'teacher':

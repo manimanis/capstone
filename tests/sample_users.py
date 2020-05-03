@@ -52,12 +52,15 @@ def generate_roles(roles=['teacher', 'student'], count=20):
     return random.choices(roles, k=count)
 
 
-def generate_random_users(count=20, role=None):
+def generate_random_users(count=20, roles=None):
     """Generate random users dictionaries"""
     random_names = generate_names(count)
     usernames = generate_usernames(random_names)
     roles = (generate_roles(count)
-             if role is None else [role for i in range(count)])
+             if roles is None
+             else [role
+                   for i in range(count // len(roles) + 1)
+                   for role in roles][:count])
     users = [dict(username=username, fullname=name, role=role,
                   picture=generate_random_picture())
              for name, username, role in zip(random_names, usernames, roles)]
