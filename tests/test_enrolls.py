@@ -171,4 +171,35 @@ class EnrollTestCase(unittest.TestCase):
             sub_count_after = StudentSubscription.get_query().count()
             self.assertEqual(sub_count_after, sub_count_before)
 
+    def test_enroll_students_to_exam_student_enroll_others(self):
+        """A student cannot enroll others students"""
+        exams_ids = set(exam.id for exam in Exam.get_query().all())
+        # Select two students and determines which exams they are not enrolled
+        # to
+        not_enr_exams = []
+        students = Student.get_query().limit(2).all()
+        for student in students:
+            enr_exams = [exam.id
+                         for exam in (StudentSubscription.get_query()
+                                      .filter(StudentSubscription.student_id ==
+                                              student.id)
+                                      .all())]
+            not_enr_exams_ids = exams_ids - set(enr_exams)
+            not_enr_exams.append(list(not_enr_exams_ids))
+        for i in range(len(students)):
+            token = generate_user_token(students[i].username,
+                                        STUDENT_PERMISSIONS)
+            exam_id = not_enr_exams[(i + 1) % 2][0]
+            student_id = students[(i + 1) % 2].id
+            res = self.client.post(
+                f'/api/v1/enrolls/{exam_id}',
+                headers={'Content-Type': 'application/json',
+                         'Authorization': f'bearer {token}'},
+                json=[student_id])
+            self.assertEqual(res.status_code, 403, res.get_json())
+            data = res.get_json()
+            self.assertEqual(data['description'],
+                             'Cannot enroll others students.', data)
+
+
 

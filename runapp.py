@@ -2,11 +2,12 @@ import os
 import sys
 
 import click
+from flask_script import Manager
 
 from app import create_app, db, auth0
 from app.models import Teacher, Student, User, DatabaseMethods, Exam, \
     StudentSubscription, StudentTry
-from flask_migrate import Migrate
+from flask_migrate import Migrate, MigrateCommand
 
 from tests.fixture import create_fixture_users, create_fixture
 
@@ -53,4 +54,10 @@ def tests(db_fixture, perform_tests):
         unittest.TextTestRunner(verbosity=2).run(unittests)
 
 
+manager = Manager(app)
+
+manager.add_command('db', MigrateCommand)
+
+if __name__ == '__main__':
+    manager.run()
 

@@ -94,10 +94,33 @@ Finally, you can launch the development server using:
 flask run
 ```
 
+
 ### Front end
 
 There is no required installation needed for the frontend. Just open the 
 browser: `http://127.0.0.1:5000/
+
+
+## Testing
+
+Unit testing of the endpoints is possible through the cli command:
+
+```commandline
+flask tests
+```
+
+You can generate test data by adding the flag `--df`:
+
+```commandline
+flask tests
+```
+
+But, before testing you should create a new database which will be used for 
+this purpose:
+
+```commandline
+createdb -U posgtres eval_project_test
+```
 
 
 ## API Endpoints
