@@ -25,7 +25,7 @@ def get_exams_list(payload):
              .filter(Exam.author_id == teacher.id)
              .order_by(Exam.dt_creation.desc()))
     search_count = query.count()
-    exams_count = Exam.get_query().count()
+    exams_count = Exam.get_query().filter(Exam.author_id == teacher.id).count()
     start, end = max(start, 0), min(end, search_count)
     exams = Exam.to_list_of_dict(
         query.slice(start, end),
@@ -44,7 +44,6 @@ def get_exams_list(payload):
 @requires_auth('create:exams')
 def create_exam(payload):
     """Create an empty exam for the authenticated teacher."""
-    start, end, search = read_request_args()
     teacher = check_teachers_rights(payload['sub'])
     exam = Exam.create_sample(teacher)
     if not exam.insert():

@@ -198,7 +198,7 @@ def check_permissions(permission, payload):
 
 
 def read_payload_from_token(token):
-    if session.get('config', 'default') != 'TESTING':
+    if os.environ.get('config', 'default') != 'testing':
         payload = verify_decode_jwt(token)
     else:
         payload = decode_token(token)
