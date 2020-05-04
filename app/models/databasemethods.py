@@ -51,8 +51,8 @@ class DatabaseMethods:
         :return:
         """
         for field in self.get_table_columns():
-            if all(field in data_dict, field not in exclude,
-                   field not in self.exclude_fields):
+            if all([field in data_dict, field not in exclude,
+                    field not in self.exclude_fields]):
                 setattr(self, field, data_dict[field])
 
     @classmethod

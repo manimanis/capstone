@@ -25,10 +25,10 @@ def home():
         # User should: exist in the database, has permissions and role.
         # if some information is missing than we conclude that this is the
         # first user login
-        if any(user is None,
-               auth_user.picture is None,
-               not auth_user.has_permissions(),
-               not auth_user.has_role()):
+        if any([user is None,
+                auth_user.picture is None,
+                not auth_user.has_permissions(),
+                not auth_user.has_role()]):
             return redirect('/select_profile')
     return render_template('index.html',
                            auth_user=auth_user,

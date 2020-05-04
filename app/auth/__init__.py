@@ -248,7 +248,7 @@ def populate_user_infos(token, infos):
         'fullname': infos['name'] if user is None else user.fullname,
         'picture': (infos['picture']
                     if user is None else user.picture
-                    if user.picture else generate_random_picture()),
+        if user.picture else generate_random_picture()),
         'role': None if user is None else user.user_type
     }
 
@@ -285,14 +285,14 @@ class Auth0User:
         return self.role is not None
 
     def has_permissions(self):
-        return all(self.permissions is not None,
-                   type(self.permissions) == list,
-                   len(self.permissions) > 0)
+        return all([self.permissions is not None,
+                    type(self.permissions) == list,
+                    len(self.permissions) > 0])
 
     def has_permission(self, permission):
-        return all(self.permissions is not None,
-                   type(self.permissions) == list,
-                   permission in self.permissions)
+        return all([self.permissions is not None,
+                    type(self.permissions) == list,
+                    permission in self.permissions])
 
     @staticmethod
     def get_roles():
