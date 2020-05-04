@@ -51,8 +51,8 @@ class DatabaseMethods:
         :return:
         """
         for field in self.get_table_columns():
-            if (field in data_dict and field not in exclude
-                    and field not in self.exclude_fields):
+            if all(field in data_dict, field not in exclude,
+                   field not in self.exclude_fields):
                 setattr(self, field, data_dict[field])
 
     @classmethod
@@ -186,7 +186,7 @@ class DatabaseMethods:
         """Commits update for one item"""
         try:
             db.session.commit()
-        except:
+        except Exception as e:
             db.session.rollback()
             return False
         return True

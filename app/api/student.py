@@ -87,9 +87,8 @@ def insert_student(payload):
     username, fullname = data['username'].lower(), data['fullname'].lower()
     student = (Student
                .get_query()
-               .filter(or_(
-        db.func.lower(Student.username) == username,
-        db.func.lower(Student.fullname) == fullname))
+               .filter(or_(db.func.lower(Student.username) == username,
+                           db.func.lower(Student.fullname) == fullname))
                .first())
     if student is not None:
         abort(400, description='The username/fullname is used.')

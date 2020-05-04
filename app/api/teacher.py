@@ -51,9 +51,8 @@ def insert_teacher(payload):
     username, fullname = data['username'].lower(), data['fullname'].lower()
     teacher = (Teacher
                .get_query()
-               .filter(or_(
-        db.func.lower(Teacher.username) == username,
-        db.func.lower(Teacher.fullname) == fullname))
+               .filter(or_(db.func.lower(Teacher.username) == username,
+                           db.func.lower(Teacher.fullname) == fullname))
                .first())
     if teacher is not None:
         abort(400, description='The username/fullname is used.')

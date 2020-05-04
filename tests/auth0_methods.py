@@ -31,7 +31,7 @@ def generate_token_by_role(role):
         res = conn.getresponse()
         data = res.read()
         return json.loads(data)
-    except:
+    except Exception as e:
         return None
 
 

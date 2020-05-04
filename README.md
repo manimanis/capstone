@@ -18,6 +18,8 @@ Finally, after working on this project for more than 15 days I decided to
 send my draft work because I will return to duty very soon I am scare not to 
 have enough time to work on it as it should.
 
+**A prelimineary working version could be found at:** 
+[https://evalapp.herokuapp.com/](https://evalapp.herokuapp.com/)
 
 ## Presentation of the project
 
@@ -56,7 +58,6 @@ The folder structure is as below:
  |__ runapp.py                      # Application shell entry point
  |__ tests                          # Tests modules
 ```
-
 
 ## Getting started
 

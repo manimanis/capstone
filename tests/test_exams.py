@@ -48,7 +48,7 @@ class ExamTestCase(unittest.TestCase):
         exams_count = Exam.query.filter(Exam.author_id == teacher.id).count()
         # Generate a header for a teacher
         token = generate_user_token(teacher.username, TEACHER_PERMISSIONS)
-        res = self.client.get('/api/v1/exams', 
+        res = self.client.get('/api/v1/exams',
                               headers={'Content-Type': 'application/json',
                                        'Authorization': f'bearer {token}'})
         self.assertEqual(res.status_code, 200, res.get_json())

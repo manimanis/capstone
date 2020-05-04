@@ -9,35 +9,6 @@ from ..auth import requires_auth
 from ..models import User
 
 
-# @api.route('/users')
-# def username_availability():
-#     """Checks:
-#      - username availability if info = 'username',
-#      - or fullname if info = 'fullname'"""
-#     keys = ['username', 'fullname']
-#     data = {}
-#     info = None
-#     for key in keys:
-#         if key in request.args:
-#             data[key] = request.args.get(key)
-#             info = key
-#             break
-#     if not data:
-#         abort(400, description=f'Invalid request.')
-#     query = User.get_query()
-#     if info == 'username':
-#         user = (query
-#                 .filter(db.func.lower(User.username) == data[info].lower())
-#                 .first())
-#     elif info == 'fullname':
-#         user = (query
-#                 .filter(db.func.lower(User.fullname) == data[info].lower())
-#                 .first())
-#     return jsonify({
-#         info: data[info],
-#         'available': user is None
-#     })
-
 @api.route('/users')
 @requires_auth('users:get')
 def get_users(payload):
@@ -80,9 +51,8 @@ def insert_user(payload):
     username, fullname = data['username'].lower(), data['fullname'].lower()
     user = (User
             .get_query()
-            .filter(or_(
-        db.func.lower(User.username) == username,
-        db.func.lower(User.fullname) == fullname))
+            .filter(or_(db.func.lower(User.username) == username,
+                        db.func.lower(User.fullname) == fullname))
             .first())
     if user is not None:
         abort(400, description='The username/fullname is used.')

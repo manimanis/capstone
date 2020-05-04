@@ -95,8 +95,8 @@ class StudentTry(db.Model, DatabaseMethods):
         self.fill_teacher_info(teacher)
         self.fill_exam_info(exam)
         self.dt_try = datetime.now()
-        self.dt_expiration = self.dt_try + \
-                             timedelta(seconds=exam.exam_duration)
+        self.dt_expiration = self.dt_try + timedelta(
+            seconds=exam.exam_duration)
         self.current_state = self.STARTED
         self.answers = '[]'
         self.total_score = 0

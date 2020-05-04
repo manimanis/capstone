@@ -246,9 +246,9 @@ def populate_user_infos(token, infos):
         'user_id': payload['sub'],
         'user_id_db': user.id if user is not None else None,
         'fullname': infos['name'] if user is None else user.fullname,
-        'picture': (infos['picture'] if user is None
-                    else user.picture if user.picture
-                    else generate_random_picture()),
+        'picture': (infos['picture']
+                    if user is None else user.picture
+                    if user.picture else generate_random_picture()),
         'role': None if user is None else user.user_type
     }
 
@@ -285,14 +285,14 @@ class Auth0User:
         return self.role is not None
 
     def has_permissions(self):
-        return (self.permissions is not None
-                and type(self.permissions) == list
-                and len(self.permissions) > 0)
+        return all(self.permissions is not None,
+                   type(self.permissions) == list,
+                   len(self.permissions) > 0)
 
     def has_permission(self, permission):
-        return (self.permissions is not None
-                and type(self.permissions) == list
-                and permission in self.permissions)
+        return all(self.permissions is not None,
+                   type(self.permissions) == list,
+                   permission in self.permissions)
 
     @staticmethod
     def get_roles():
@@ -342,7 +342,7 @@ class Auth0User:
             res = conn.getresponse()
             # status = 204 -> role assigned
             return res.status == 204
-        except:
+        except Exception as e:
             return False
 
     @staticmethod
@@ -362,7 +362,7 @@ class Auth0User:
                 permissions = [item['permission_name'] for item in data]
                 return permissions
             return permissions
-        except:
+        except Exception as e:
             return permissions
 
 

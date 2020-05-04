@@ -97,8 +97,10 @@ class Exam(db.Model, DatabaseMethods):
         exams_ids = [exam.id for exam in data_list]
         if include_fields is not None and 'enrolled_count' in include_fields:
             enrolled_count = {
-                key: value for key, value in StudentSubscription
-                    .enrolled_count_by_exams_ids(exams_ids).all()}
+                key: value
+                for key, value in (StudentSubscription
+                                   .enrolled_count_by_exams_ids(exams_ids)
+                                   .all())}
         exams = super().to_list_of_dict(data_list,
                                         exclude_fields, include_fields)
         if include_fields is not None and 'teacher' in include_fields:

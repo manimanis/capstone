@@ -75,7 +75,8 @@ def initiate_exam(payload, exam_id):
         student_try.create_new_try(user, teacher, exam)
         if not student_try.insert():
             abort(400, description='Cannot start an exam.')
-    elif student_try.current_state not in [StudentTry.SAVE, StudentTry.STARTED]:
+    elif (student_try.current_state
+          not in [StudentTry.SAVE, StudentTry.STARTED]):
         abort(400, description='You have either completed the exam or it is '
                                'expired.')
     exam_try = StudentTry.to_dict(student_try, exclude_fields=['exercises'])
@@ -121,13 +122,12 @@ def send_exam_answers(payload, try_id):
                                'right exam.')
     # must provide correct state: either save answers or tell us that you wish
     # to end the exam
-    if (current_state != StudentTry.SAVE
-            and current_state != StudentTry.COMPLETED):
+    if current_state not in [StudentTry.SAVE, StudentTry.COMPLETED]:
         abort(400, description='Nothing could be done to the request.')
     # We tolerate only 120s after the sending delay
     # but we save the students answers
-    expired_alert = (current_time > (student_try.dt_expiration +
-                                     timedelta(seconds=120)))
+    tolerance = student_try.dt_expiration + timedelta(seconds=120)
+    expired_alert = (current_time > tolerance)
     answers_history = json.loads(student_try.answers)
     if len(answers_history) > 0:
         # we will save the answers only if it is different from the last one
@@ -151,7 +151,3 @@ def send_exam_answers(payload, try_id):
         'success': True,
         'expired_alert': expired_alert
     })
-
-
-
-

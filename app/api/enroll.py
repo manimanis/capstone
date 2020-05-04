@@ -140,9 +140,10 @@ def un_enroll_students_to_exam(payload, exam_id):
     else:
         abort(403, description='You are not allowed to un-enroll.')
     # Check if all of the students_ids are enrolled to this exam_id
-    if (StudentSubscription
-            .enrolled_count_in_students_ids(exam_id, students_ids)
-            != len(students_ids)):
+    num_subscriptions = (StudentSubscription
+                         .enrolled_count_in_students_ids(exam_id,
+                                                         students_ids))
+    if num_subscriptions != len(students_ids):
         abort(400, description='Not all of the students are enrolled.')
     deleted_enrolls = StudentSubscription.un_enroll_students(exam_id,
                                                              students_ids)

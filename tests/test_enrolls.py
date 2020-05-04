@@ -124,8 +124,7 @@ class EnrollTestCase(unittest.TestCase):
                 subscription.exam_id
                 for subscription in StudentSubscription
                 .get_query()
-                .filter(
-                StudentSubscription.student_id == student.id)
+                .filter(StudentSubscription.student_id == student.id)
                 .all()) for student in students}
         # Determine which exams the students is not enrolled in
         students_not_enrolled = {
@@ -179,11 +178,12 @@ class EnrollTestCase(unittest.TestCase):
         not_enr_exams = []
         students = Student.get_query().limit(2).all()
         for student in students:
+            student_subscriptions = \
+                (StudentSubscription.get_query()
+                 .filter(StudentSubscription.student_id == student.id)
+                 .all())
             enr_exams = [exam.id
-                         for exam in (StudentSubscription.get_query()
-                                      .filter(StudentSubscription.student_id ==
-                                              student.id)
-                                      .all())]
+                         for exam in student_subscriptions]
             not_enr_exams_ids = exams_ids - set(enr_exams)
             not_enr_exams.append(list(not_enr_exams_ids))
         for i in range(len(students)):
@@ -200,6 +200,3 @@ class EnrollTestCase(unittest.TestCase):
             data = res.get_json()
             self.assertEqual(data['description'],
                              'Cannot enroll others students.', data)
-
-
-

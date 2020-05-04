@@ -45,4 +45,5 @@ class User(db.Model, DatabaseMethods):
     @classmethod
     def get_by_username(cls, username):
         return (User.get_query()
-                .filter(db.func.lower(User.username) == username.lower()).first())
+                .filter(db.func.lower(User.username) == username.lower())
+                .first())

@@ -27,10 +27,10 @@ class StudentSubscription(db.Model, DatabaseMethods):
 
     @staticmethod
     def enrolled_count_by_exams_ids(exams_ids):
+        """Return a pair of values (exam_id, count(student_id)"""
         from . import Exam
         from . import Student
-        
-        """Return a pair of values (exam_id, count(student_id)"""
+
         return (db.session
                 .query(StudentSubscription.exam_id,
                        db.func.count(

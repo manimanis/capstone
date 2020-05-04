@@ -166,8 +166,10 @@ SAMPLE_EXAMS = [
                      'is_correct': False,
                      'mark': 1},
                  {
-                     'answer': '<nav>, <article>, <section> and many others tags are '
-                               'semantic elements that could be replaced by <div>',
+                     'answer': '<nav>, <article>, <section> and many others '
+                               'tags are '
+                               'semantic elements that could be replaced '
+                               'by <div>',
                      'is_correct': True,
                      'mark': 1},
                  {
@@ -195,14 +197,15 @@ SAMPLE_EXAMS = [
                      'answer': '<b> is used to make text bold',
                      'is_correct': True,
                      'mark': 1}],
-                 'description': 'Many inline tags are used to format text in HTML:',
+                 'description': 'Many inline tags are used to format text '
+                                'in HTML:',
                  'multiple_answers': True,
                  'question_type': 'QcmQuestion',
                  'shuffle_answers': True,
                  'title': 'Question 10'}],
          'shuffle_questions': False,
          'title': 'Exercise 1 of 1'}]),
-     'from_date':datetime(2020, 4, 26, 0, 0),
+     'from_date': datetime(2020, 4, 26, 0, 0),
      'id': 1,
      'max_retries': 2147483647,
      'shuffle_exercises': False,
@@ -237,11 +240,13 @@ SAMPLE_EXAMS = [
               'shuffle_answers': True,
               'title': 'Question 1'},
               {'answers': [{
-                  'answer': 'Use <from> tag, then set action and method attributes',
+                  'answer': 'Use <from> tag, then set action and method '
+                            'attributes',
                   'is_correct': False,
                   'mark': 1},
                   {
-                      'answer': 'Use <input> tag to create buttons, text inputs, '
+                      'answer': 'Use <input> tag to create buttons, text '
+                                'inputs, '
                                 'checkboxes and radio buttons.',
                       'is_correct': True,
                       'mark': 1},
@@ -251,7 +256,8 @@ SAMPLE_EXAMS = [
                       'is_correct': True,
                       'mark': 1},
                   {
-                      'answer': 'Use placeholder attribute to give hints to the user '
+                      'answer': 'Use placeholder attribute to give hints to '
+                                'the user '
                                 'about the required input',
                       'is_correct': True,
                       'mark': 1}],
@@ -265,15 +271,18 @@ SAMPLE_EXAMS = [
                    'is_correct': True,
                    'mark': 1},
                   {
-                      'answer': 'The src attribute is used to specify the image path',
+                      'answer': 'The src attribute is used to specify the '
+                                'image path',
                       'is_correct': True,
                       'mark': 1},
                   {
-                      'answer': 'The href attribute is used to specify the image path',
+                      'answer': 'The href attribute is used to specify the '
+                                'image path',
                       'is_correct': False,
                       'mark': 1},
                   {
-                      'answer': "It's encouraged to add an alt attribute, to be "
+                      'answer': "It's encouraged to add an alt attribute, to "
+                                "be "
                                 'displayed when the image fails to display',
                       'is_correct': True,
                       'mark': 1}],
@@ -283,19 +292,23 @@ SAMPLE_EXAMS = [
                   'shuffle_answers': True,
                   'title': 'Question 3'},
               {'answers': [{
-                  'answer': 'To access internal data located on the same webserver',
+                  'answer': 'To access internal data located on the same '
+                            'webserver',
                   'is_correct': False,
                   'mark': 1},
                   {
-                      'answer': 'To access external data located in an external server',
+                      'answer': 'To access external data located in an '
+                                'external server',
                       'is_correct': True,
                       'mark': 1},
                   {
-                      'answer': 'To use another protocol such as file, ftp, https, etc.',
+                      'answer': 'To use another protocol such as file, ftp, '
+                                'https, etc.',
                       'is_correct': True,
                       'mark': 1},
                   {
-                      'answer': 'When the resources are located in the same folder as '
+                      'answer': 'When the resources are located in the same '
+                                'folder as '
                                 'the webpage',
                       'is_correct': False,
                       'mark': 1}],
@@ -312,17 +325,21 @@ SAMPLE_EXAMS = [
                    'is_correct': True,
                    'mark': 1},
                   {
-                      'answer': 'We must specify the href attributes and some clickable '
+                      'answer': 'We must specify the href attributes and some '
+                                'clickable '
                                 'content',
                       'is_correct': True,
                       'mark': 1},
                   {
-                      'answer': 'We can add the target attribute to choose where the '
+                      'answer': 'We can add the target attribute to choose '
+                                'where the '
                                 'document should be opened',
                       'is_correct': True,
                       'mark': 1}],
-                  'description': 'HTML is built around the idea that one document can references '
-                                 'others resources and documents with the ability to move from one '
+                  'description': 'HTML is built around the idea that one '
+                                 'document can references '
+                                 'others resources and documents with the '
+                                 'ability to move from one '
                                  'to one another.',
                   'multiple_answers': True,
                   'question_type': 'QcmQuestion',
@@ -337,7 +354,8 @@ SAMPLE_EXAMS = [
                             'is_correct': False, 'mark': 1},
                            {'answer': 'p, h1, ul, ol',
                             'is_correct': False, 'mark': 1}],
-               'description': 'Which of the following tags are semantic tags added in HTML5:',
+               'description': 'Which of the following tags are semantic tags '
+                              'added in HTML5:',
                'multiple_answers': True,
                'question_type': 'QcmQuestion',
                'shuffle_answers': True,
@@ -368,7 +386,8 @@ SAMPLE_EXAMS = [
                             'is_correct': True,
                             'mark': 1},
                            {
-                               'answer': 'Multiple style sheets could be included in one HTML '
+                               'answer': 'Multiple style sheets could be '
+                                         'included in one HTML '
                                          'file',
                                'is_correct': True,
                                'mark': 1}],
@@ -410,14 +429,16 @@ SAMPLE_EXAMS = [
                             'is_correct': True,
                             'mark': 1},
                            {
-                               'answer': 'background-color, to change the background color',
+                               'answer': 'background-color, to change the '
+                                         'background color',
                                'is_correct': True,
                                'mark': 1},
                            {'answer': 'text-color, to change the text color',
                             'is_correct': False,
                             'mark': 1},
                            {
-                               'answer': 'back-color, to change the background color',
+                               'answer': 'back-color, to change the '
+                                         'background color',
                                'is_correct': False,
                                'mark': 1}],
                'description': 'which properties are used for colors:',
@@ -430,7 +451,8 @@ SAMPLE_EXAMS = [
                            {'answer': '230px', 'is_correct': True, 'mark': 1},
                            {'answer': '220px', 'is_correct': False,
                             'mark': 1}],
-               'description': "What's the default width of the blue painted box, the rect class "
+               'description': "What's the default width of the blue painted "
+                              "box, the rect class "
                               'was applied to the div.\n'
                               'rect {\n'
                               '  width: 200px; height: 100px;\n'
@@ -449,7 +471,8 @@ SAMPLE_EXAMS = [
                            {'answer': '100px 100px 100px 100px',
                             'is_correct': True,
                             'mark': 1}],
-               'description': 'Which is the right property for border-radius to make a [200px x '
+               'description': 'Which is the right property for border-radius '
+                              'to make a [200px x '
                               '200px] image looks like a circle:',
                'multiple_answers': True,
                'question_type': 'QcmQuestion',
@@ -466,8 +489,10 @@ SAMPLE_EXAMS = [
                   {'answer': 'right: 20px; bottom: 5px;',
                    'is_correct': False,
                    'mark': 1}],
-                  'description': 'Tell which property should be placed in the 2nd rule to move the '
-                                 'div move from its initial position by 20px to the right and 5px '
+                  'description': 'Tell which property should be placed in the '
+                                 '2nd rule to move the '
+                                 'div move from its initial position by 20px '
+                                 'to the right and 5px '
                                  'to the to?',
                   'multiple_answers': True,
                   'question_type': 'QcmQuestion',
@@ -484,7 +509,8 @@ SAMPLE_EXAMS = [
                             'mark': 1},
                            {'answer': 'font: 10pt italic;',
                             'is_correct': False, 'mark': 1}],
-               'description': 'Tell which properties should we add to the 2nd rule to make the '
+               'description': 'Tell which properties should we add to the '
+                              '2nd rule to make the '
                               'text 10pt, italic:',
                'multiple_answers': True,
                'question_type': 'QcmQuestion',
@@ -529,8 +555,10 @@ SAMPLE_EXAMS = [
                              'ul li { \n'
                              '  /* 2nd rule */\n'
                              '}\n'
-                             "What's the rule that could be placed in the 2nd rule to display "
-                             'the three list items in one line: Help us God!, rather than '
+                             "What's the rule that could be placed in the 2nd "
+                             "rule to display "
+                             'the three list items in one line: Help us God!, '
+                             'rather than '
                              'three lines:',
               'multiple_answers': True,
               'question_type': 'QcmQuestion',
@@ -539,7 +567,8 @@ SAMPLE_EXAMS = [
               {'answers': [{'answer': 'margin: 5px 0 5px;',
                             'is_correct': False, 'mark': 1},
                            {
-                               'answer': 'margin: 0; margin-left: 5px; margin-right: 5px;',
+                               'answer': 'margin: 0; margin-left: 5px; '
+                                         'margin-right: 5px;',
                                'is_correct': True,
                                'mark': 1},
                            {'answer': 'margin: 5px 0;',
@@ -562,7 +591,8 @@ SAMPLE_EXAMS = [
                               'ul li { \n'
                               '  /* 2nd rule */\n'
                               '}\n'
-                              'Q10: Which rule could be placed in the 2nd rule to define a 5px '
+                              'Q10: Which rule could be placed in the 2nd '
+                              'rule to define a 5px '
                               'horizontal margin between list items:',
                'multiple_answers': True,
                'question_type': 'QcmQuestion',
@@ -577,7 +607,8 @@ SAMPLE_EXAMS = [
                    'mark': 1},
                   {'answer': '.coords ul', 'is_correct': True,
                    'mark': 1}],
-                  'description': 'Which selector could be used to style the <ul> inside the div?',
+                  'description': 'Which selector could be used to style '
+                                 'the <ul> inside the div?',
                   'multiple_answers': True,
                   'question_type': 'QcmQuestion',
                   'shuffle_answers': True,
@@ -604,7 +635,8 @@ SAMPLE_EXAMS = [
                    'mark': 1},
                   {'answer': 'Pseudoclass selector',
                    'is_correct': False, 'mark': 1}],
-                  'description': 'Which selector should be used to style in red some (more than '
+                  'description': 'Which selector should be used to style '
+                                 'in red some (more than '
                                  'one) of the paragraphs in one web page?',
                   'multiple_answers': True,
                   'question_type': 'QcmQuestion',
@@ -637,7 +669,8 @@ SAMPLE_EXAMS = [
                   {'answer': 'We cannot draw triangles in CSS',
                    'is_correct': False,
                    'mark': 1}],
-                  'description': 'Select which properties to add to the following rule to draw a '
+                  'description': 'Select which properties to add to the '
+                                 'following rule to draw a '
                                  'triangle in CSS using borders?\n'
                                  '#triangle { width: 0; height: 0; }',
                   'multiple_answers': True,
@@ -657,7 +690,8 @@ SAMPLE_EXAMS = [
                   {'answer': 'background-position: center center;',
                    'is_correct': True,
                    'mark': 1}],
-                  'description': 'How to display a (400px x 400px) centered image in the center of '
+                  'description': 'How to display a (400px x 400px) centered '
+                                 'image in the center of '
                                  'one div using CSS?',
                   'multiple_answers': True,
                   'question_type': 'QcmQuestion',

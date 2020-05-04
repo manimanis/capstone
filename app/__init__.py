@@ -51,4 +51,3 @@ def create_app(config_name):
         }), e.code
 
     return app
-

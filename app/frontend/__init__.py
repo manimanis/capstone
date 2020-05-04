@@ -25,10 +25,10 @@ def home():
         # User should: exist in the database, has permissions and role.
         # if some information is missing than we conclude that this is the
         # first user login
-        if (user is None
-                or auth_user.picture is None
-                or not auth_user.has_permissions()
-                or not auth_user.has_role()):
+        if any(user is None,
+               auth_user.picture is None,
+               not auth_user.has_permissions(),
+               not auth_user.has_role()):
             return redirect('/select_profile')
     return render_template('index.html',
                            auth_user=auth_user,
@@ -87,8 +87,8 @@ def select_profile():
                 user = Teacher(username=auth_user.user_id,
                                picture=picture,
                                fullname=auth_user.fullname)
-            completed = (auth_user.set_role(auth_user.user_id, roles[role])
-                         and user.insert())
+            user_role_set = auth_user.set_role(auth_user.user_id, roles[role])
+            completed = (user_role_set and user.insert())
         else:
             completed = False
         if not completed:

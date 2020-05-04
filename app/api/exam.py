@@ -29,7 +29,7 @@ def get_exams_list(payload):
     start, end = max(start, 0), min(end, search_count)
     exams = Exam.to_list_of_dict(
         query.slice(start, end),
-        include_fields=Exam.get_table_columns()+['enrolled_count'])
+        include_fields=Exam.get_table_columns() + ['enrolled_count'])
     return jsonify({
         'success': True,
         'exams_count': exams_count,
