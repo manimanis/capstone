@@ -12,7 +12,6 @@ if len(sys.argv) > 1:
         RUN_CONFIG = 'testing'
 os.environ['config'] = RUN_CONFIG
 
-print(RUN_CONFIG)
 
 app = create_app(RUN_CONFIG)
 migrate = Migrate(app, db)
